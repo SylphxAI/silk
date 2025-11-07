@@ -105,16 +105,29 @@ export function withSilk(
       config.plugins = config.plugins || []
       config.plugins.push(unpluginSilk.webpack(silkPluginOptions))
 
-      // Inject CSS in client bundle (only in production)
-      if (!isServer && inject && !dev) {
+      // Inject CSS in client bundle
+      // The silk-client module will:
+      // - Try to inject CSS link tag if silk.css exists
+      // - Show helpful warning if CSS not found
+      // - Support HMR in dev mode
+      if (!isServer && inject) {
         const originalEntry = config.entry
         config.entry = async () => {
           const entries = await originalEntry()
 
           // Webpack will resolve the package path from node_modules exports
           const silkClientModule = '@sylphx/silk-nextjs/silk-client'
-          if (entries['main.js'] && !entries['main.js'].includes(silkClientModule)) {
-            entries['main.js'].unshift(silkClientModule)
+
+          // Inject into all client entries
+          for (const [key, value] of Object.entries(entries)) {
+            // Skip server entries
+            if (key.includes('server') || key.includes('middleware')) continue
+
+            if (Array.isArray(value)) {
+              if (!value.includes(silkClientModule)) {
+                value.unshift(silkClientModule)
+              }
+            }
           }
 
           return entries

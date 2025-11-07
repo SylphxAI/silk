@@ -190,6 +190,90 @@ interface SilkNextConfig {
 }
 ```
 
+## Troubleshooting
+
+### CSS Not Loading
+
+If you see unstyled components or a warning in the browser console:
+
+**Development Mode:**
+1. Make sure you've imported the CSS file in your layout:
+   ```typescript
+   // app/layout.tsx
+   import './silk.css'  // ✅ Required for HMR
+   ```
+
+2. Check that the CSS file is being generated:
+   ```bash
+   ls public/silk.css  # or wherever outputFile is configured
+   ```
+
+**Production Mode:**
+- The `inject: true` option (default) will automatically inject CSS
+- The silk-client module tries multiple paths:
+  - `/_next/static/css/silk.css`
+  - `/silk.css`
+  - `/public/silk.css`
+
+**If the warning persists:**
+```typescript
+// Manually import CSS in your layout
+import './silk.css'
+// or
+import '@sylphx/silk/dist/silk.css'
+```
+
+### CSS Injection Not Working
+
+If `inject: true` doesn't work:
+
+1. **Check your Next.js config:**
+   ```typescript
+   export default withSilk({
+     // Next.js config
+   }, {
+     inject: true,  // ✅ Default, enables auto-injection
+     outputFile: 'silk.css',
+   })
+   ```
+
+2. **Disable custom webpack config** that might conflict:
+   ```typescript
+   // Remove or check for conflicts
+   webpack(config) {
+     // Custom webpack config
+   }
+   ```
+
+3. **Manual import is always safe:**
+   ```typescript
+   // app/layout.tsx
+   import './silk.css'  // Always works
+   ```
+
+### Turbopack Compatibility
+
+Silk uses webpack-based plugin. If using Next.js 16 with Turbopack:
+
+- Silk automatically disables Turbopack and uses webpack
+- For native Turbopack support, use the SWC plugin (coming soon)
+
+```typescript
+// next.config.js
+// Silk will automatically set turbo: undefined
+```
+
+### Build Errors
+
+**"Cannot find module './silk.css'"**
+- The CSS file is generated during the webpack build
+- In development, run `npm run dev` to generate it
+- For production, run `npm run build`
+
+**"Unexpected token" or SyntaxError**
+- Make sure you're using `'use client'` directive for client components
+- Ensure Babel is configured correctly (Silk handles this automatically)
+
 ## Ecosystem
 
 - **[@sylphx/silk](https://www.npmjs.com/package/@sylphx/silk)** - Core styling system
