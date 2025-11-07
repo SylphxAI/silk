@@ -63,6 +63,15 @@ export {
   resolveConflicts,
 } from './optimizer'
 
+// Style Merging (StyleX-inspired)
+export {
+  mergeStyles,
+  conditionalStyle,
+  createVariant,
+  createCompoundVariant,
+} from './merge-styles'
+export type { CompoundVariantConfig } from './merge-styles'
+
 // Responsive
 export {
   generateMediaQuery,
