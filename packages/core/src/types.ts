@@ -182,6 +182,38 @@ export type TypedStyleProps<Config extends DesignConfig> = {
   _hover?: TypedStyleProps<Config>
   _focus?: TypedStyleProps<Config>
   _active?: TypedStyleProps<Config>
+  _disabled?: TypedStyleProps<Config>
+  _visited?: TypedStyleProps<Config>
+  _checked?: TypedStyleProps<Config>
+  _before?: TypedStyleProps<Config>
+  _after?: TypedStyleProps<Config>
+
+  // Modern CSS: Container Queries (93% browser support)
+  // Enable with containerType, then use @container queries
+  containerType?: 'size' | 'inline-size' | 'normal'
+  containerName?: string
+  '@container'?: TypedStyleProps<Config>
+  '@container (min-width: 400px)'?: TypedStyleProps<Config>
+  '@container (min-width: 600px)'?: TypedStyleProps<Config>
+  '@container (orientation: portrait)'?: TypedStyleProps<Config>
+
+  // Modern CSS: @scope (85% browser support)
+  // Scoped styles with explicit boundaries
+  '@scope'?: {
+    root?: string
+    limit?: string
+    styles: TypedStyleProps<Config>
+  }
+
+  // Modern CSS: @starting-style (88% browser support)
+  // Entry animations from display:none
+  '@starting-style'?: TypedStyleProps<Config>
+
+  // Modern CSS: View Transitions (75% browser support, Interop 2025)
+  viewTransitionName?: string
+
+  // CSS Containment (95% browser support)
+  contain?: 'none' | 'strict' | 'content' | 'size' | 'layout' | 'style' | 'paint'
 
   // Responsive (breakpoints)
   [K: string]: any // Allow responsive props like 'sm', 'md', etc.

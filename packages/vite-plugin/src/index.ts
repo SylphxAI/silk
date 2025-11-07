@@ -1,12 +1,43 @@
 /**
  * @sylphx/silk-vite-plugin
- * Build-time CSS extraction for zero runtime overhead
+ * Build-time CSS extraction with pre-compression (15-25% smaller)
  */
 
 import type { Plugin, ViteDevServer } from 'vite'
 import { cssRules } from '@sylphx/silk'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import { compress } from 'brotli-wasm'
+import { gzipSync } from 'node:zlib'
+
+export interface CompressionOptions {
+  /**
+   * Enable Brotli compression (.css.br)
+   * 15-25% smaller than gzip, 70% compression for CSS
+   * @default true
+   */
+  brotli?: boolean
+
+  /**
+   * Brotli quality (0-11, higher = better compression but slower)
+   * Use 11 for production (static compression, no runtime cost)
+   * @default 11
+   */
+  brotliQuality?: number
+
+  /**
+   * Enable gzip compression (.css.gz)
+   * Fallback for older servers
+   * @default true
+   */
+  gzip?: boolean
+
+  /**
+   * Gzip level (0-9)
+   * @default 9
+   */
+  gzipLevel?: number
+}
 
 export interface SilkPluginOptions {
   /**
@@ -32,14 +63,71 @@ export interface SilkPluginOptions {
    * @default true
    */
   watch?: boolean
+
+  /**
+   * Pre-compression options (Brotli + gzip)
+   * Generates .br and .gz files for web servers
+   * @default { brotli: true, gzip: true }
+   */
+  compression?: CompressionOptions
 }
 
 export function silk(options: SilkPluginOptions = {}): Plugin {
-  const { outputFile = 'silk.css', inject = true, minify, watch = true } = options
+  const {
+    outputFile = 'silk.css',
+    inject = true,
+    minify,
+    watch = true,
+    compression = {}
+  } = options
+
+  const compressionConfig: Required<CompressionOptions> = {
+    brotli: compression.brotli ?? true,
+    brotliQuality: compression.brotliQuality ?? 11,
+    gzip: compression.gzip ?? true,
+    gzipLevel: compression.gzipLevel ?? 9,
+  }
 
   let server: ViteDevServer | undefined
   let isBuild = false
   const cssCache = new Set<string>()
+
+  /**
+   * Generate compressed versions of CSS
+   */
+  async function generateCompressedAssets(css: string, fileName: string) {
+    const outputs: Array<{ fileName: string; source: Buffer }> = []
+
+    // Generate Brotli (.br)
+    if (compressionConfig.brotli) {
+      try {
+        const compressed = await compress(Buffer.from(css, 'utf-8'), {
+          quality: compressionConfig.brotliQuality,
+        })
+        outputs.push({
+          fileName: `${fileName}.br`,
+          source: Buffer.from(compressed),
+        })
+      } catch (error) {
+        console.warn('Brotli compression failed:', error)
+      }
+    }
+
+    // Generate gzip (.gz)
+    if (compressionConfig.gzip) {
+      try {
+        const compressed = gzipSync(css, { level: compressionConfig.gzipLevel })
+        outputs.push({
+          fileName: `${fileName}.gz`,
+          source: compressed,
+        })
+      } catch (error) {
+        console.warn('Gzip compression failed:', error)
+      }
+    }
+
+    return outputs
+  }
 
   /**
    * Collect CSS rules from runtime
@@ -129,18 +217,43 @@ export function silk(options: SilkPluginOptions = {}): Plugin {
       },
     },
 
-    generateBundle(_, bundle) {
+    async generateBundle(_, bundle) {
       if (!isBuild) return
 
       const css = generateCSS()
       if (!css) return
 
-      // Emit CSS file
+      // Emit main CSS file
       this.emitFile({
         type: 'asset',
         fileName: outputFile,
         source: css,
       })
+
+      // Generate and emit compressed versions
+      const compressedAssets = await generateCompressedAssets(css, outputFile)
+      for (const asset of compressedAssets) {
+        this.emitFile({
+          type: 'asset',
+          fileName: asset.fileName,
+          source: asset.source,
+        })
+      }
+
+      // Log compression results
+      if (compressedAssets.length > 0) {
+        const originalSize = Buffer.byteLength(css, 'utf-8')
+        console.log('\n📦 Silk CSS Bundle:')
+        console.log(`  Original: ${formatBytes(originalSize)} (${outputFile})`)
+
+        for (const asset of compressedAssets) {
+          const compressedSize = asset.source.length
+          const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1)
+          const ext = asset.fileName.split('.').pop()
+          console.log(`  ${ext?.toUpperCase()}: ${formatBytes(compressedSize)} (-${savings}%)`)
+        }
+        console.log('')
+      }
 
       // Update HTML to reference external CSS file
       for (const fileName in bundle) {
@@ -192,3 +305,12 @@ if (import.meta.hot) {
   })
 }
 `
+
+/**
+ * Format bytes to human-readable format
+ */
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes}B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)}MB`
+}

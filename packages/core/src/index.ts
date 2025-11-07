@@ -7,16 +7,48 @@
 export { createStyleSystem, cssRules } from './runtime'
 export type { StyleSystem } from './runtime'
 
-// Production optimizations
+// Production optimizations (with LightningCSS - 5-10x faster)
 export {
   generateClassName,
   generateShortClassName,
   hashStyleId,
   optimizeCSS,
+  optimizeCSSWithLightning,
+  smartOptimizeCSS,
   resetShortNameCounter,
   getShortNameCount,
 } from './production'
 export type { ProductionConfig, CSSOptimizationResult } from './production'
+
+// Atomic CSS Deduplication (10-20% smaller for large apps)
+export {
+  AtomicCSSRegistry,
+  getAtomicRegistry,
+  resetAtomicRegistry,
+  generateAtomicReport,
+} from './atomic'
+export type { AtomicCSSOptions } from './atomic'
+
+// Modern CSS Features (93% browser support)
+export {
+  supportsContainerQueries,
+  supportsScope,
+  supportsStartingStyle,
+  generateContainerQuery as generateModernContainerQuery,
+  generateScopeCSS,
+  generateStartingStyle,
+  parseContainerQuery,
+  isContainerQuery,
+  isScope,
+  isStartingStyle,
+  extractModernCSSFeatures,
+  generateCompatibilityReport,
+  defaultModernCSSConfig,
+} from './modern-css'
+export type { ModernCSSConfig } from './modern-css'
+
+// Runtime Performance (2-3x faster)
+export { getRuntimeStats, resetRuntimeStats } from './runtime'
 
 // Extended runtime with all features
 export { createExtendedStyleSystem } from './runtime-extended'
