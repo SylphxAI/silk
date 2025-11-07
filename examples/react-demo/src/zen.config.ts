@@ -6,9 +6,11 @@
 import { defineConfig } from '@sylphx/zencss'
 import { createZenReact } from '@sylphx/zencss-react'
 
-// Define design tokens with 'as const' for type inference
-const config = defineConfig({
-  colors: {
+// Create and export ZenCSS React system with full type inference
+// Option 1: Direct export (simplest - recommended for most cases)
+export const { styled, Box, Flex, Grid, Text, css, cx } = createZenReact(
+  defineConfig({
+    colors: {
     brand: {
       50: '#f0f9ff',
       100: '#e0f2fe',
@@ -132,11 +134,11 @@ const config = defineConfig({
     4: '4px',
     8: '8px',
   },
-} as const)
+  } as const)
+)
 
-// Create and export ZenCSS React system with full type inference
-// This single function handles all the type gymnastics internally
-export const { styled, Box, Flex, Grid, Text, css, cx } = createZenReact(config)
-
-// Optionally export config type for reference
-export type Config = typeof config
+// Note: If you need to reference the config type elsewhere, use Option 2:
+//
+// const config = defineConfig({ ... } as const)
+// export const { styled, Box, ... } = createZenReact(config)
+// export type Config = typeof config
