@@ -55,20 +55,68 @@ ZenCSS is a **high-performance** CSS-in-TypeScript library that delivers **indus
 ## Installation
 
 ```bash
-# Using bun (recommended)
+# Core package
 bun add @sylphx/zencss
 
-# Using npm
-npm install @sylphx/zencss
+# React integration (includes core)
+bun add @sylphx/zencss-react
 
-# Using pnpm
-pnpm add @sylphx/zencss
-
-# Using yarn
-yarn add @sylphx/zencss
+# Other package managers
+npm install @sylphx/zencss-react
+pnpm add @sylphx/zencss-react
+yarn add @sylphx/zencss-react
 ```
 
 ## Quick Start
+
+### React (Recommended)
+
+```typescript
+// zen.config.ts
+import { defineConfig } from '@sylphx/zencss'
+import { createZenReact } from '@sylphx/zencss-react'
+
+// ✨ One-line setup with full type inference
+export const { styled, Box, Flex, Grid, Text, css, cx } = createZenReact(
+  defineConfig({
+    colors: {
+      brand: { 500: '#3b82f6', 600: '#2563eb' },
+      gray: { 100: '#f3f4f6', 900: '#111827' }
+    },
+    spacing: { 4: '1rem', 8: '2rem' },
+    fontSizes: { base: '1rem', lg: '1.125rem' }
+  } as const)
+)
+```
+
+```tsx
+// App.tsx
+import { Box, Text, styled } from './zen.config'
+
+function App() {
+  return (
+    <Box p={8} bg="gray.100">
+      <Text fontSize="lg" color="gray.900">
+        Hello ZenCSS! 🎨
+      </Text>
+    </Box>
+  )
+}
+
+// Create styled components
+const Button = styled('button', {
+  bg: 'brand.500',     // ✅ Full autocomplete
+  color: 'white',
+  px: 6,
+  py: 3,
+  rounded: 'md',
+  _hover: {
+    bg: 'brand.600'    // ✅ Full autocomplete
+  }
+})
+```
+
+### Vanilla TypeScript
 
 ```typescript
 import { defineConfig, createStyleSystem } from '@sylphx/zencss'
@@ -78,9 +126,9 @@ const config = defineConfig({
     primary: { 500: '#3b82f6', 600: '#2563eb' },
     gray: { 100: '#f3f4f6', 900: '#111827' }
   },
-  spacing: { 1: '0.25rem', 2: '0.5rem', 4: '1rem', 8: '2rem' },
-  fontSizes: { sm: '0.875rem', base: '1rem', lg: '1.125rem' }
-})
+  spacing: { 4: '1rem', 8: '2rem' },
+  fontSizes: { base: '1rem', lg: '1.125rem' }
+} as const)
 
 const { css, cx, getCSSRules } = createStyleSystem(config)
 
@@ -96,31 +144,51 @@ const button = css({
 
 // TypeScript error on invalid tokens
 css({ color: 'invalid.500' })  // ❌ Compile error
-
-// Result: { className: 'zen-abc zen-def zen-ghi' }
 ```
 
 ## Core Features
 
 ### Type Inference Without Codegen
 
-ZenCSS uses TypeScript's template literal types to infer types directly from your config:
+ZenCSS uses TypeScript's template literal types to infer types directly from your config - no codegen required:
 
 ```typescript
 const config = defineConfig({
-  colors: { red: { 500: '#ef4444' } }
-})
+  colors: {
+    brand: { 500: '#3b82f6', 600: '#2563eb' },
+    gray: { 900: '#111827' }
+  },
+  spacing: { 4: '1rem', 8: '2rem' },
+  fontSizes: { base: '1rem', lg: '1.125rem' }
+} as const)  // ← 'as const' is key for type inference
 
-// TypeScript automatically infers: type ColorToken = 'red.500'
-// No codegen, no generated files, instant autocomplete
+// TypeScript automatically infers:
+// type ColorToken = 'brand.500' | 'brand.600' | 'gray.900'
+// type SpacingToken = '4' | '8'
+// type FontSizeToken = 'base' | 'lg'
+```
 
-css({ color: 'red.500' })  // ✅ Type-safe
-css({ color: 'red.600' })  // ❌ TypeScript error
+**In React components:**
+```tsx
+// Full autocomplete for all design tokens!
+<Box
+  bg="brand.500"      // ✅ Autocomplete: brand.500, brand.600, gray.900
+  color="gray.900"    // ✅ Full type safety
+  p={4}               // ✅ Autocomplete: 4, 8
+  fontSize="lg"       // ✅ Autocomplete: base, lg
+>
+  Hello ZenCSS
+</Box>
+
+// Invalid tokens produce TypeScript errors
+<Box color="invalid.500">  // ❌ Compile error
+<Box p={999}>              // ❌ Compile error
 ```
 
 **vs Panda CSS:**
-- Panda requires `panda codegen` to generate `styled-system/` directory
-- ZenCSS: zero codegen, faster type checking, simpler setup
+- ❌ Panda requires `panda codegen` to generate `styled-system/` directory
+- ✅ ZenCSS: zero codegen, instant autocomplete, faster type checking
+- ✅ Simpler setup: just `export const { Box, ... } = createZenReact(config)`
 
 ### Critical CSS Extraction
 
@@ -339,30 +407,64 @@ console.log(tracker.getStats())
 
 ### React Integration
 
+ZenCSS provides first-class React support with `createZenReact()`:
+
 ```typescript
-import { createReactStyleSystem } from '@sylphx/zencss-react'
-import { css } from './zen.config'
+// zen.config.ts - One-line setup
+import { defineConfig } from '@sylphx/zencss'
+import { createZenReact } from '@sylphx/zencss-react'
 
-const { styled, Box, Flex, Text } = createReactStyleSystem(css)
+export const { styled, Box, Flex, Grid, Text, css, cx } = createZenReact(
+  defineConfig({
+    colors: {
+      brand: { 500: '#3b82f6', 600: '#2563eb' },
+      gray: { 900: '#111827' }
+    },
+    spacing: { 4: '1rem', 6: '1.5rem' },
+    fontSizes: { base: '1rem', lg: '1.125rem' }
+  } as const)
+)
+```
 
+```tsx
+// App.tsx - Use with full type inference
+import { Box, Flex, Text, styled } from './zen.config'
+
+// Create styled components
 const Button = styled('button', {
-  bg: 'primary.500',
+  bg: 'brand.500',     // ✅ Autocomplete: brand.500, brand.600, etc.
   color: 'white',
-  padding: '4',
-  _hover: { bg: 'primary.600' }
+  px: 6,
+  py: 3,
+  rounded: 'md',
+  fontWeight: 'semibold',
+  _hover: {
+    bg: 'brand.600'    // ✅ Full type inference in pseudo-selectors
+  }
 })
 
 function App() {
   return (
-    <Flex gap={4}>
+    <Flex gap={4} p={6}>
       <Button>Click me</Button>
       <Box color="gray.900" fontSize="lg">
         Hello World
       </Box>
+      <Text fontSize="base" color="gray.900">
+        All props are fully type-checked ✨
+      </Text>
     </Flex>
   )
 }
 ```
+
+**Features:**
+- ✅ Full TypeScript autocomplete for all design tokens
+- ✅ Type-safe props in JSX (no more `string` types!)
+- ✅ Support for Box, Flex, Grid, Text primitives
+- ✅ styled() factory for creating custom components
+- ✅ Pseudo-selectors (_hover, _focus, _active, etc.)
+- ✅ Zero configuration required
 
 ## Performance Benchmarks
 
@@ -486,6 +588,34 @@ ZenCSS is Panda CSS, but **better where it matters**:
 
 ## Examples
 
+### React Demo App
+
+Interactive demo showcasing all ZenCSS features:
+
+```bash
+cd examples/react-demo
+bun install
+bun run dev
+```
+
+**Features demonstrated:**
+- ✅ Full type inference in JSX
+- ✅ Layout system (Flexbox, Grid, spacing)
+- ✅ Typography system (font sizes, weights, colors)
+- ✅ Pseudo-selectors (_hover, _focus, _active, _disabled)
+- ✅ Component variants (size, color)
+- ✅ Complex UI composition (cards, forms, dashboards)
+- ✅ Interactive examples with state management
+
+**Demo sections:**
+- Overview - Introduction to ZenCSS features
+- Layout - Flexbox, Grid, spacing utilities
+- Typography - Font sizes, weights, colors
+- Pseudo Selectors - Hover, focus, active states
+- Variants - Component variants and recipes
+- Responsive - Responsive design utilities
+- Composition - Building complex UIs
+
 ### Production Optimization Demo
 
 ```bash
@@ -512,10 +642,15 @@ bun packages/core/src/benchmark.demo.ts
 
 ## Documentation
 
+### Core Documentation
 - [Benchmark Results](./BENCHMARK_RESULTS.md) - Detailed performance comparison
 - [Optimization Guide](./packages/core/OPTIMIZATION.md) - CSS optimization techniques
 - [Feature Summary](./packages/core/FEATURES_SUMMARY.md) - Complete feature list
 - [Optimization Plan](./packages/core/OPTIMIZATION_PLAN.md) - Roadmap and research
+
+### React Integration Guides
+- [Configuration Setup](./examples/react-demo/CONFIG_SETUP.md) - How to set up ZenCSS React
+- [Type Checking Guide](./examples/react-demo/TYPE_CHECKING.md) - Verify type inference is working
 
 ## Testing
 
