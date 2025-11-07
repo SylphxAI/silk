@@ -145,12 +145,13 @@ export function zenCSS(options: ZenCSSPluginOptions = {}): Plugin {
       // Update HTML to reference external CSS file
       for (const fileName in bundle) {
         const chunk = bundle[fileName]
-        if (chunk.type === 'asset' && fileName.endsWith('.html')) {
-          const html = chunk.source as string
+        if (chunk && chunk.type === 'asset' && fileName.endsWith('.html')) {
+          const asset = chunk as any // OutputAsset type
+          const html = asset.source as string
           const linkTag = `<link rel="stylesheet" href="/${outputFile}">`
 
           // Replace inline style with link tag
-          chunk.source = html
+          asset.source = html
             .replace(/<style data-zencss>[\s\S]*?<\/style>/, linkTag)
             .replace('</head>', `${linkTag}\n</head>`)
         }

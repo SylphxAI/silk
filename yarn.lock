@@ -743,14 +743,14 @@
   resolved "https://registry.npmjs.org/@sinclair/typebox/-/typebox-0.27.8.tgz"
   integrity sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==
 
-"@sylphx/zencss@packages/core", "@sylphx/zencss@workspace:*":
+"@sylphx/zencss@^workspace:packages/core", "@sylphx/zencss@workspace:*":
   version "workspace:packages/core"
   resolved "workspace:packages/core"
   devDependencies:
     typescript "^5.3.0"
     vitest "^1.6.0"
 
-"@sylphx/zencss-react@packages/react", "@sylphx/zencss-react@workspace:*":
+"@sylphx/zencss-react@^workspace:packages/react", "@sylphx/zencss-react@workspace:*":
   version "workspace:packages/react"
   resolved "workspace:packages/react"
   devDependencies:
@@ -761,7 +761,7 @@
   dependencies:
     "@sylphx/zencss" "workspace:*"
 
-"@sylphx/zencss-vite-plugin@packages/vite-plugin", "@sylphx/zencss-vite-plugin@workspace:*":
+"@sylphx/zencss-vite-plugin@^workspace:packages/vite-plugin", "@sylphx/zencss-vite-plugin@workspace:*":
   version "workspace:packages/vite-plugin"
   resolved "workspace:packages/vite-plugin"
   devDependencies:
@@ -1611,7 +1611,7 @@ react@^18.0.0, react@^18.2.0, react@^18.3.1:
   dependencies:
     loose-envify "^1.1.0"
 
-"react-demo@examples/react-demo":
+react-demo@^workspace:examples/react-demo:
   version "workspace:examples/react-demo"
   resolved "workspace:examples/react-demo"
   devDependencies:
