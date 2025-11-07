@@ -30,6 +30,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./silk-client": {
+      "import": "./dist/silk-client.js",
+      "types": "./dist/silk-client.d.ts"
     }
   },
   "files": [

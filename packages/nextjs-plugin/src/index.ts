@@ -4,16 +4,9 @@
  * Uses unplugin for zero-runtime CSS compilation
  */
 
-import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
 import type { NextConfig } from 'next'
 import type { DesignConfig } from '@sylphx/silk'
 import { unpluginSilk, type SilkPluginOptions } from '@sylphx/silk-vite-plugin'
-
-// Get the path to silk-client.js in ESM
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = dirname(__filename)
-const silkClientPath = join(__dirname, 'silk-client.js')
 
 export interface SilkNextConfig extends SilkPluginOptions {
   /**
@@ -106,8 +99,10 @@ export function withSilk(
         config.entry = async () => {
           const entries = await originalEntry()
 
-          if (entries['main.js'] && !entries['main.js'].includes(silkClientPath)) {
-            entries['main.js'].unshift(silkClientPath)
+          // Webpack will resolve the package path from node_modules exports
+          const silkClientModule = '@sylphx/silk-nextjs/silk-client'
+          if (entries['main.js'] && !entries['main.js'].includes(silkClientModule)) {
+            entries['main.js'].unshift(silkClientModule)
           }
 
           return entries
