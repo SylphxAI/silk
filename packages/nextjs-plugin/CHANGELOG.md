@@ -1,5 +1,20 @@
 # @sylphx/silk-nextjs
 
+## 2.0.6
+
+### Patch Changes
+
+- Fix ESM compatibility in Next.js plugin
+
+  - Replace `require.resolve()` with ESM-compatible `import.meta.url` path resolution
+  - Update tsconfig: moduleResolution from "bundler" to "node16"
+  - Fixes "require is not defined" error when using Next.js with ESM config files
+
+  This resolves issues when using @sylphx/silk-nextjs with next.config.mjs (ESM config files).
+
+- Updated dependencies [f99cf8b]
+  - @sylphx/silk@2.0.2
+
 ## 2.0.5
 
 ### Patch Changes

@@ -44,7 +44,7 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@sylphx/silk": "^1.2.0"
+    "@sylphx/silk": "^2.0.0"
   },
   "devDependencies": {
     "@sylphx/silk": "^2.0.0",
