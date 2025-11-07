@@ -5,6 +5,7 @@
  */
 
 import type { DesignConfig, TypedStyleProps, StyleObject } from './types'
+import { getMinimalProps } from './optimizer'
 
 // CSS rule storage for build-time extraction
 export const cssRules = new Map<string, string>()
@@ -207,24 +208,32 @@ function generateAtomicClass<C extends DesignConfig>(
 /**
  * Create CSS function with typed config
  */
-export function createStyleSystem<C extends DesignConfig>(config: C) {
+export function createStyleSystem<C extends DesignConfig>(
+  config: C,
+  options?: { optimize?: boolean }
+) {
+  const { optimize = true } = options ?? {}
+
   function css(styles: TypedStyleProps<C>): StyleObject {
     const classNames: string[] = []
     const dynamicStyles: Record<string, any> = {}
 
-    for (const [key, value] of Object.entries(styles)) {
+    // OPTIMIZATION: Merge and minimize properties
+    const processedStyles = optimize ? getMinimalProps(styles) : styles
+
+    for (const [key, value] of Object.entries(processedStyles)) {
       if (value === undefined || value === null) continue
 
       // Handle pseudo selectors
       if (key.startsWith('_')) {
         const pseudo = pseudoMap[key]
         if (pseudo && typeof value === 'object') {
-          // Recursively process pseudo styles
-          for (const [nestedKey, nestedValue] of Object.entries(value)) {
-            const prop = propertyMap[nestedKey] ?? nestedKey
+          // Recursively process pseudo styles with optimization
+          const pseudoStyles = optimize ? getMinimalProps(value as TypedStyleProps<C>) : value
+          for (const [nestedKey, nestedValue] of Object.entries(pseudoStyles)) {
             const className = generateAtomicClass(
               config,
-              prop,
+              nestedKey,
               nestedValue as string | number,
               pseudo
             )
@@ -240,17 +249,14 @@ export function createStyleSystem<C extends DesignConfig>(config: C) {
         continue
       }
 
-      // Map shorthand to full property name
-      const prop = propertyMap[key] ?? key
-
       // Skip non-style properties
       if (typeof value === 'object') {
-        dynamicStyles[prop] = value
+        dynamicStyles[key] = value
         continue
       }
 
-      // Generate atomic class
-      const className = generateAtomicClass(config, prop, value)
+      // Generate atomic class (property names are already normalized by optimizer)
+      const className = generateAtomicClass(config, key, value)
       classNames.push(className)
     }
 

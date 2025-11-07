@@ -14,3 +14,10 @@ export type {
   TokenScale,
 } from './types'
 export { defineConfig } from './config'
+export {
+  normalizeProps,
+  mergeProperties,
+  optimizeProps,
+  getMinimalProps,
+  resolveConflicts,
+} from './optimizer'
