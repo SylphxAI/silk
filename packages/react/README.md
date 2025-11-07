@@ -51,7 +51,20 @@ function App() {
 
 ## Ecosystem
 
+### Core
 - **[@sylphx/silk](https://www.npmjs.com/package/@sylphx/silk)** - Core styling system
+
+### Framework Integrations
+- **[@sylphx/silk-vue](https://www.npmjs.com/package/@sylphx/silk-vue)** - Vue 3 Composition API
+- **[@sylphx/silk-svelte](https://www.npmjs.com/package/@sylphx/silk-svelte)** - Svelte reactive stores
+- **[@sylphx/silk-solid](https://www.npmjs.com/package/@sylphx/silk-solid)** - Solid.js fine-grained reactivity
+
+### Meta-Framework Plugins
+- **[@sylphx/silk-nextjs](https://www.npmjs.com/package/@sylphx/silk-nextjs)** - Next.js App Router & RSC
+- **[@sylphx/silk-remix](https://www.npmjs.com/package/@sylphx/silk-remix)** - Remix streaming SSR
+- **[@sylphx/silk-astro](https://www.npmjs.com/package/@sylphx/silk-astro)** - Astro islands architecture
+
+### Build Tools
 - **[@sylphx/silk-vite-plugin](https://www.npmjs.com/package/@sylphx/silk-vite-plugin)** - Vite plugin for build-time extraction
 
 ## Documentation
