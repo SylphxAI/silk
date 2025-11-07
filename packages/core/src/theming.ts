@@ -2,8 +2,8 @@
  * Theming system with semantic tokens and CSS variables
  */
 
-import type { DesignConfig } from './types'
-import type { SemanticTokens, SemanticTokenValue, ThemeConfig } from './types-extended'
+import type { DesignConfig } from './types.js'
+import type { SemanticTokens, SemanticTokenValue, ThemeConfig } from './types-extended.js'
 
 export type ThemeMode = 'light' | 'dark'
 

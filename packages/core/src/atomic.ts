@@ -6,8 +6,8 @@
  * Result: 10-20% smaller CSS for apps with 100+ components
  */
 
-import { generateShortClassName } from './production'
-import type { ProductionConfig } from './production'
+import { generateShortClassName } from './production.js'
+import type { ProductionConfig } from './production.js'
 
 export interface AtomicCSSOptions {
   /** Production config for class name generation */

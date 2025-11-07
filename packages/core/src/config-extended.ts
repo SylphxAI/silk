@@ -2,9 +2,9 @@
  * Extended configuration with all features
  */
 
-import { defineConfig } from './config'
-import { defaultKeyframes, defaultAnimations } from './animations'
-import type { ThemeConfig, AnimationConfig } from './types-extended'
+import { defineConfig } from './config.js'
+import { defaultKeyframes, defaultAnimations } from './animations.js'
+import type { ThemeConfig, AnimationConfig } from './types-extended.js'
 
 /**
  * Extended config helper with semantic tokens and animations

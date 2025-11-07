@@ -2,7 +2,7 @@
  * Animation and transition utilities
  */
 
-import type { AnimationConfig } from './types-extended'
+import type { AnimationConfig } from './types-extended.js'
 
 /**
  * Generate @keyframes CSS

@@ -6,7 +6,7 @@
  * - View Transitions (75% browser support, Interop 2025)
  */
 
-import type { DesignConfig, TypedStyleProps } from './types'
+import type { DesignConfig, TypedStyleProps } from './types.js'
 
 export interface ModernCSSConfig {
   /** Enable container queries (default: true) */

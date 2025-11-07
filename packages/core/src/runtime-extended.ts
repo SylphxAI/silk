@@ -3,17 +3,17 @@
  * Responsive, Variants, Theming, Animations, Container Queries
  */
 
-import type { DesignConfig, TypedStyleProps, StyleObject } from './types'
-import type { ThemeConfig, AnimationConfig, ContainerConfig } from './types-extended'
-import { getMinimalProps } from './optimizer'
+import type { DesignConfig, TypedStyleProps, StyleObject } from './types.js'
+import type { ThemeConfig, AnimationConfig, ContainerConfig } from './types-extended.js'
+import { getMinimalProps } from './optimizer.js'
 import {
   processResponsiveStyles,
   generateResponsiveCSS,
   processContainerQueries,
   generateContainerQueryCSS,
-} from './responsive'
-import { generateCSSVariables, generateCSSVariableStylesheet, createTheme } from './theming'
-import { generateAllKeyframes, defaultKeyframes, defaultAnimations } from './animations'
+} from './responsive.js'
+import { generateCSSVariables, generateCSSVariableStylesheet, createTheme } from './theming.js'
+import { generateAllKeyframes, defaultKeyframes, defaultAnimations } from './animations.js'
 
 // Extended pseudo selector mapping
 const extendedPseudoMap: Record<string, string> = {

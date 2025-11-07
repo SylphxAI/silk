@@ -4,7 +4,7 @@
  * Provides explicit, type-safe style composition
  */
 
-import type { DesignConfig, TypedStyleProps } from './types'
+import type { DesignConfig, TypedStyleProps } from './types.js'
 
 /**
  * Merge multiple style objects with proper precedence

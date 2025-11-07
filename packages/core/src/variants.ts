@@ -3,14 +3,14 @@
  * Type-safe component variants inspired by Stitches and Panda CSS
  */
 
-import type { DesignConfig, TypedStyleProps } from './types'
+import type { DesignConfig, TypedStyleProps } from './types.js'
 import type {
   RecipeConfig,
   RecipeVariantProps,
   CompoundVariant,
   VariantDefinition,
   RecipeFunction,
-} from './types-extended'
+} from './types-extended.js'
 
 /**
  * Create a recipe (component with variants)

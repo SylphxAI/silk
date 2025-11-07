@@ -4,8 +4,8 @@
  */
 
 // Core runtime (Browser-safe, ~500B gzipped)
-export { createStyleSystem, cssRules } from './runtime'
-export type { StyleSystem } from './runtime'
+export { createStyleSystem, cssRules } from './runtime.js'
+export type { StyleSystem } from './runtime.js'
 
 // Build-time only: Default css function for zero-runtime compilation
 // This is a stub that gets transformed by @sylphx/babel-plugin-silk at build time
@@ -43,15 +43,15 @@ export {
   extractModernCSSFeatures,
   generateCompatibilityReport,
   defaultModernCSSConfig,
-} from './modern-css'
-export type { ModernCSSConfig } from './modern-css'
+} from './modern-css.js'
+export type { ModernCSSConfig } from './modern-css.js'
 
 // Runtime Performance (2-3x faster)
-export { getRuntimeStats, resetRuntimeStats } from './runtime'
+export { getRuntimeStats, resetRuntimeStats } from './runtime.js'
 
 // Extended runtime with all features
-export { createExtendedStyleSystem } from './runtime-extended'
-export type { ExtendedStyleSystem, ExtendedStyleSystemOptions } from './runtime-extended'
+export { createExtendedStyleSystem } from './runtime-extended.js'
+export type { ExtendedStyleSystem, ExtendedStyleSystemOptions } from './runtime-extended.js'
 
 // Types
 export type {
@@ -61,7 +61,7 @@ export type {
   CSSProperties,
   NestedKeys,
   TokenScale,
-} from './types'
+} from './types.js'
 
 // Extended types
 export type {
@@ -79,11 +79,11 @@ export type {
   VariantDefinition,
   SlotRecipeConfig,
   CompleteStyleProps,
-} from './types-extended'
+} from './types-extended.js'
 
 // Config
-export { defineConfig, defaultConfig } from './config'
-export type { DefaultConfig } from './config'
+export { defineConfig, defaultConfig } from './config.js'
+export type { DefaultConfig } from './config.js'
 
 // Optimizer
 export {
@@ -92,7 +92,7 @@ export {
   optimizeProps,
   getMinimalProps,
   resolveConflicts,
-} from './optimizer'
+} from './optimizer.js'
 
 // Style Merging (StyleX-inspired)
 export {
@@ -100,8 +100,8 @@ export {
   conditionalStyle,
   createVariant,
   createCompoundVariant,
-} from './merge-styles'
-export type { CompoundVariantConfig } from './merge-styles'
+} from './merge-styles.js'
+export type { CompoundVariantConfig } from './merge-styles.js'
 
 // Responsive
 export {
@@ -111,10 +111,10 @@ export {
   generateContainerQuery,
   processContainerQueries,
   generateContainerQueryCSS,
-} from './responsive'
+} from './responsive.js'
 
 // Variants & Recipes
-export { recipe, slotRecipe, cva } from './variants'
+export { recipe, slotRecipe, cva } from './variants.js'
 
 // Theming
 export {
@@ -124,8 +124,8 @@ export {
   generateCSSVariableStylesheet,
   ThemeController,
   createTheme,
-} from './theming'
-export type { ThemeMode } from './theming'
+} from './theming.js'
+export type { ThemeMode } from './theming.js'
 
 // Animations
 export {
@@ -135,7 +135,7 @@ export {
   defaultKeyframes,
   transitionPresets,
   easingFunctions,
-} from './animations'
+} from './animations.js'
 
 // Cascade Layers (@layer)
 export {
@@ -145,8 +145,8 @@ export {
   organizeByLayers,
   LayerManager,
   defaultLayerConfig,
-} from './layers'
-export type { CascadeLayer, LayerConfig } from './layers'
+} from './layers.js'
+export type { CascadeLayer, LayerConfig } from './layers.js'
 
 // Selector Optimization (:where)
 export {
@@ -160,8 +160,8 @@ export {
   minifyClassName,
   ClassNameGenerator,
   defaultSelectorConfig,
-} from './selectors'
-export type { SelectorConfig } from './selectors'
+} from './selectors.js'
+export type { SelectorConfig } from './selectors.js'
 
 // Native CSS Nesting
 export {
@@ -171,8 +171,8 @@ export {
   convertToNestedCSS,
   isNestingSupported,
   defaultNestingConfig,
-} from './nesting'
-export type { NestingConfig } from './nesting'
+} from './nesting.js'
+export type { NestingConfig } from './nesting.js'
 
 // Modern CSS Color Functions
 export {
@@ -191,20 +191,20 @@ export {
   createColorScale,
   hexToOKLCH,
   defaultColorConfig,
-} from './colors'
-export type { ColorConfig, OKLCHColor, ColorMixOptions, ColorPaletteOptions } from './colors'
+} from './colors.js'
+export type { ColorConfig, OKLCHColor, ColorMixOptions, ColorPaletteOptions } from './colors.js'
 
 // Tree Shaking & Dead Code Elimination (types only - implementations use Node.js APIs)
-export type { TreeShakingConfig } from './tree-shaking'
+export type { TreeShakingConfig } from './tree-shaking.js'
 
 // Critical CSS Extraction (types only - implementations use Node.js APIs)
-export type { CriticalCSSConfig } from './critical-css'
+export type { CriticalCSSConfig } from './critical-css.js'
 
 // Performance Monitoring (types only - implementations use Node.js APIs)
-export type { PerformanceMetrics, BuildReport } from './performance'
+export type { PerformanceMetrics, BuildReport } from './performance.js'
 
 // Benchmarking (types only - implementations use Node.js APIs)
-export type { BenchmarkMetrics, BenchmarkScenario } from './benchmark'
+export type { BenchmarkMetrics, BenchmarkScenario } from './benchmark.js'
 
 // NOTE: Node.js-only implementations (tree-shaking, critical-css, performance, benchmark)
 // are not exported from the main entry to ensure browser compatibility.

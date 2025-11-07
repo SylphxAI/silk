@@ -1,5 +1,13 @@
 # @sylphx/silk
 
+## 2.0.1
+
+### Patch Changes
+
+- Fix lightningcss dependency: move from devDependencies to optionalDependencies
+
+  lightningcss is now an optional dependency that will be automatically installed if available, but gracefully falls back to manual CSS optimization if not present. This fixes installation issues where users would see errors about missing lightningcss native bindings.
+
 ## 1.2.0
 
 ### Minor Changes

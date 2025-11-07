@@ -2,7 +2,7 @@
  * Config helper with proper type inference
  */
 
-import type { DesignConfig } from './types'
+import type { DesignConfig } from './types.js'
 
 /**
  * Define design system config with type inference

@@ -3,7 +3,7 @@
  * Responsive, Variants, Theming, Container Queries
  */
 
-import type { DesignConfig, TypedStyleProps } from './types'
+import type { DesignConfig, TypedStyleProps } from './types.js'
 
 // ============================================================================
 // RESPONSIVE BREAKPOINTS

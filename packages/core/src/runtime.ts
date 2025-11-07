@@ -4,21 +4,21 @@
  * Runtime: Handles dynamic styles (2-3x faster with optimizations)
  */
 
-import type { DesignConfig, TypedStyleProps, StyleObject } from './types'
-import { getMinimalProps } from './optimizer'
-import { LayerManager, type LayerConfig, type CascadeLayer, classifyLayer } from './layers'
+import type { DesignConfig, TypedStyleProps, StyleObject } from './types.js'
+import { getMinimalProps } from './optimizer.js'
+import { LayerManager, type LayerConfig, type CascadeLayer, classifyLayer } from './layers.js'
 import {
   type SelectorConfig,
   generateSelector,
   wrapInWhere,
   ClassNameGenerator,
-} from './selectors'
+} from './selectors.js'
 import {
   type ProductionConfig,
   generateClassName,
   optimizeCSS,
   resetShortNameCounter,
-} from './production'
+} from './production.js'
 
 // CSS rule storage for build-time extraction
 export const cssRules = new Map<string, string>()

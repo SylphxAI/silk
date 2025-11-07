@@ -3,7 +3,7 @@
  * Merge properties and generate minimal effective class names
  */
 
-import type { TypedStyleProps, DesignConfig } from './types'
+import type { TypedStyleProps, DesignConfig } from './types.js'
 
 /**
  * Property groups that can be merged

@@ -2,7 +2,7 @@
  * Responsive breakpoints system
  */
 
-import type { DesignConfig, TypedStyleProps } from './types'
+import type { DesignConfig, TypedStyleProps } from './types.js'
 
 export interface ResponsiveConfig {
   breakpoints?: Record<string, string>

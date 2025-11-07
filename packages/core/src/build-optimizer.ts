@@ -21,8 +21,8 @@ export {
   smartOptimizeCSS,
   resetShortNameCounter,
   getShortNameCount,
-} from './production'
-export type { ProductionConfig, CSSOptimizationResult } from './production'
+} from './production.js'
+export type { ProductionConfig, CSSOptimizationResult } from './production.js'
 
 // Atomic CSS Deduplication (10-20% smaller for large apps)
 export {
@@ -30,14 +30,14 @@ export {
   getAtomicRegistry,
   resetAtomicRegistry,
   generateAtomicReport,
-} from './atomic'
-export type { AtomicCSSOptions } from './atomic'
+} from './atomic.js'
+export type { AtomicCSSOptions } from './atomic.js'
 
 // Critical CSS Extraction (30-50% faster first paint)
 export {
   CriticalCSSExtractor,
   CriticalCSSMeasurement,
-} from './critical-css'
+} from './critical-css.js'
 export type {
   CriticalCSSConfig,
-} from './critical-css'
+} from './critical-css.js'
