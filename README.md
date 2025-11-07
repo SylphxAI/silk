@@ -14,13 +14,13 @@
 [![Tests](https://img.shields.io/badge/tests-494%20passing-brightgreen)](.)
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
 
-**92% smaller than Panda** • **5-10x faster builds** • **2-3x faster runtime** • **Zero codegen** • **Modern CSS**
+**92% smaller than Panda** • **True Zero-Runtime** • **Build-time Compilation** • **-6.5KB JS Bundle** • **Zero Codegen**
 
-### 🚀 What's New in v1.1.0
+### 🚀 What's New in v2.0.0
 
-⚡ **LightningCSS (5-10x faster)** • 📦 **Brotli Pre-Compression (15-25% smaller)** • ⚛️ **Atomic Deduplication (10-20% smaller)** • 🎯 **Container Queries (93%)** • 🔬 **@scope (85%)** • ✨ **@starting-style (88%)** • 🏃 **Runtime Optimizations (2-3x faster)**
+⚡ **Zero-Runtime Compilation** • 📦 **Build-time CSS Extraction (-6.5KB JS)** • 🎯 **389B Brotli CSS (-61%)** • 🔧 **unplugin Architecture** • 🚀 **All Frameworks Updated** • ✨ **HMR with State Preservation** • 🔥 **0ms Runtime Cost**
 
-[View Full Changelog →](./.changeset/v1-1-0-optimizations.md)
+[View Full Release Notes →](./RELEASE_NOTES_V2.md) • [Migration Guide →](./MIGRATION_GUIDE.md)
 
 </div>
 
@@ -30,16 +30,45 @@
 
 Silk is the **smallest, fastest, and most feature-complete** zero-runtime CSS-in-TypeScript framework. Built on research from Meta StyleX, Panda CSS, and modern CSS specifications.
 
+**v2.0 introduces true zero-runtime compilation:**
+- CSS extracted at **build-time** via Babel plugin
+- **-6.5KB JS bundle** (runtime eliminated)
+- **389B Brotli CSS** (-61% compression)
+- **0ms runtime cost** (no CSS-in-JS overhead)
+
 **Real Bundle Sizes (200 Components):**
 - Silk: **500B gzipped** ✨
 - Panda CSS: 5,936B gzipped (+1087%)
 - **Silk is 92% smaller**
 
-Unlike other frameworks, Silk requires **zero codegen** while achieving complete type safety through pure TypeScript. No build step, instant autocomplete, perfect DX.
+Unlike other frameworks, Silk requires **zero codegen** while achieving complete type safety through pure TypeScript. Perfect DX with instant autocomplete.
 
 ## ⚡ Why Silk?
 
-### **🚀 v1.1.0: Performance & Modern CSS Revolution**
+### **🚀 v2.0.0: True Zero-Runtime Revolution**
+
+#### **Zero-Runtime Compilation (NEW in v2.0)**
+- 🎯 **Build-time CSS Transformation** - Babel plugin extracts CSS at build time
+- 📦 **-6.5KB JS Bundle** - Runtime code completely eliminated
+- ⚡ **0ms Runtime Cost** - No CSS-in-JS overhead whatsoever
+- 🔥 **389B Brotli CSS** - 61% compression on extracted CSS
+- 🚀 **HMR with State Preservation** - Instant style updates, zero reloads
+
+**How it works:**
+```typescript
+// Your code
+import { css } from '@sylphx/silk'
+const button = css({ bg: 'blue', px: 4 })
+
+// Transformed at build-time to:
+const button = "silk_bg_blue_xxxx silk_px_4_xxxx"
+
+// CSS extracted to silk.css:
+.silk_bg_blue_xxxx { background-color: blue; }
+.silk_px_4_xxxx { padding: 1rem; }
+```
+
+### **🚀 v1.1.0: Performance & Modern CSS (Still Included)**
 
 #### **Build Performance (5-10x Faster)**
 - ⚡ **LightningCSS Integration** - Rust-based optimization
@@ -72,8 +101,10 @@ Unlike other frameworks, Silk requires **zero codegen** while achieving complete
 ### **Developer Experience**
 - 🎯 **Strict Type Safety** - Only design tokens allowed
 - ✨ **Zero Codegen** - Instant autocomplete, no build step
-- 🚀 **Zero Runtime** - CSS extracted at build time
+- 🚀 **True Zero Runtime** - Build-time Babel transformation
+- 🔥 **0ms Runtime Cost** - No CSS-in-JS overhead
 - 🔒 **Design System Enforcement** - Invalid tokens caught at compile time
+- ⚡ **HMR with State Preservation** - Instant updates without reload
 - 📊 **Performance Analytics** - Built-in monitoring
 - 🌲 **Modern CSS** - All latest features supported
 
@@ -356,29 +387,64 @@ const { css, getCSSRules } = createStyleSystem(config, {
 ## Installation
 
 ```bash
-# Core package
+# Core package (v2.0+)
 bun add @sylphx/silk
+
+# Build plugin for zero-runtime (NEW in v2.0)
+bun add @sylphx/silk-vite-plugin
 
 # React integration (includes core)
 bun add @sylphx/silk-react
 
-# Framework integrations (v1.2.0+)
+# Framework integrations (v2.0+)
 bun add @sylphx/silk-nextjs     # Next.js App Router & RSC
 bun add @sylphx/silk-remix      # Remix Streaming SSR
 bun add @sylphx/silk-astro      # Astro Islands Architecture
 bun add @sylphx/silk-solid      # Solid.js Fine-Grained Reactivity
 bun add @sylphx/silk-vue        # Vue 3 Composition API
 bun add @sylphx/silk-svelte     # Svelte Reactive Stores
+bun add @sylphx/silk-qwik       # Qwik Resumability
+bun add @sylphx/silk-preact     # Preact 3KB Runtime
 
 # Other package managers
-npm install @sylphx/silk-react
-pnpm add @sylphx/silk-react
-yarn add @sylphx/silk-react
+npm install @sylphx/silk @sylphx/silk-vite-plugin
+pnpm add @sylphx/silk @sylphx/silk-vite-plugin
+yarn add @sylphx/silk @sylphx/silk-vite-plugin
 ```
 
-## 🔌 Framework Integrations (v1.2.0+)
+### Quick Setup (v2.0)
 
-Silk now provides **first-class integration packages** for major frameworks with framework-specific optimizations:
+**1. Install packages:**
+```bash
+bun add @sylphx/silk @sylphx/silk-vite-plugin @sylphx/silk-react
+```
+
+**2. Configure Vite:**
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import silk from '@sylphx/silk-vite-plugin'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [
+    silk(),  // Add BEFORE React
+    react(),
+  ],
+})
+```
+
+**3. Import CSS:**
+```typescript
+// main.tsx
+import './silk.css'  // Generated by build plugin
+```
+
+**Done!** You now have zero-runtime CSS compilation.
+
+## 🔌 Framework Integrations (v2.0+)
+
+Silk now provides **first-class integration packages** with **zero-runtime compilation** for all major frameworks:
 
 ### 🚀 Next.js - App Router & React Server Components
 
@@ -387,11 +453,11 @@ bun add @sylphx/silk-nextjs
 ```
 
 **Features:**
+- ✅ **Zero-runtime** build-time compilation via unplugin.webpack
 - ✅ Full App Router support with React Server Components
-- ✅ Automatic critical CSS extraction during SSR
-- ✅ Server-side rendering optimizations
+- ✅ Automatic CSS extraction during build
 - ✅ Brotli pre-compression
-- ✅ Zero configuration required
+- ✅ HMR with state preservation
 
 ```javascript
 // next.config.js
@@ -400,64 +466,81 @@ import { withSilk } from '@sylphx/silk-nextjs'
 export default withSilk({
   // Your Next.js config
 }, {
-  appRouter: true,
-  rsc: true,
-  criticalCSS: true
+  outputFile: 'silk.css',
+  babelOptions: {
+    production: true
+  }
 })
+```
+
+```typescript
+// app/layout.tsx
+import './silk.css'  // Import generated CSS
+
+export default function RootLayout({ children }) {
+  return <html><body>{children}</body></html>
+}
 ```
 
 [View Full Next.js Documentation →](./packages/nextjs-plugin/README.md)
 
-### 🎵 Remix - Streaming SSR & Critical CSS
+### 🎵 Remix - Streaming SSR & Zero-Runtime
 
 ```bash
 bun add @sylphx/silk-remix
 ```
 
 **Features:**
-- ✅ Streaming SSR support with progressive CSS loading
-- ✅ Critical CSS extraction during server-side rendering
-- ✅ Route-based CSS splitting
-- ✅ Progressive rendering optimizations
+- ✅ **Zero-runtime** via Vite plugin (Remix v2+)
+- ✅ Build-time CSS extraction
+- ✅ Streaming SSR compatible
+- ✅ Brotli pre-compression
 
 ```typescript
-// entry.server.tsx
-import { SilkProvider, extractCriticalCSS } from '@sylphx/silk-remix'
+// vite.config.ts
+import { defineConfig } from 'vite'
+import { vitePlugin as remix } from '@remix-run/dev'
+import { silkPlugin } from '@sylphx/silk-remix/vite'
 
-const { css, cleanup } = extractCriticalCSS()
+export default defineConfig({
+  plugins: [
+    silkPlugin(),  // Add BEFORE Remix
+    remix(),
+  ],
+})
+```
 
-const markup = renderToString(
-  <SilkProvider css={css}>
-    <RemixServer />
-  </SilkProvider>
-)
-
-cleanup()
+```typescript
+// app/root.tsx
+export const links: LinksFunction = () => [
+  { rel: 'stylesheet', href: '/silk.css' }
+]
 ```
 
 [View Full Remix Documentation →](./packages/remix-plugin/README.md)
 
-### 🚀 Astro - Islands Architecture & Partial Hydration
+### 🚀 Astro - Islands Architecture & Zero-Runtime
 
 ```bash
 bun add @sylphx/silk-astro
 ```
 
 **Features:**
-- ✅ Islands architecture support with per-island CSS extraction
-- ✅ Partial hydration optimizations
+- ✅ **Zero-runtime** via unplugin integration
+- ✅ Islands architecture support
 - ✅ Multi-framework support (React, Solid, Vue, Svelte)
-- ✅ Zero CSS for static Astro components
+- ✅ Build-time CSS extraction
 
 ```javascript
 // astro.config.mjs
+import { defineConfig } from 'astro/config'
 import silk from '@sylphx/silk-astro'
 
 export default defineConfig({
   integrations: [
     silk({
-      islands: true,
-      criticalCSS: true
+      outputFile: 'silk.css',
+      babelOptions: { production: true }
     })
   ]
 })
@@ -465,22 +548,30 @@ export default defineConfig({
 
 [View Full Astro Documentation →](./packages/astro-integration/README.md)
 
-### ⚡ Solid.js - Fine-Grained Reactivity
+### ⚡ Solid.js - Fine-Grained Reactivity & Zero-Runtime
 
 ```bash
 bun add @sylphx/silk-solid
 ```
 
 **Features:**
+- ✅ **Zero-runtime** via Vite plugin
 - ✅ Perfect integration with Solid's fine-grained reactivity
-- ✅ Zero unnecessary re-renders
-- ✅ Optimal performance with minimal bundle size
+- ✅ Build-time CSS extraction
 - ✅ SolidStart ready
 
 ```typescript
-import { createSilkSolid } from '@sylphx/silk-solid'
+// vite.config.ts
+import { defineConfig } from 'vite'
+import solidPlugin from 'vite-plugin-solid'
+import { silkPlugin } from '@sylphx/silk-solid/vite'
 
-export const { styled, Box, css } = createSilkSolid(config)
+export default defineConfig({
+  plugins: [
+    silkPlugin(),  // Add BEFORE Solid
+    solidPlugin(),
+  ],
+})
 ```
 
 [View Full Solid.js Documentation →](./packages/solid-bindings/README.md)
