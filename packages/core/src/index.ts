@@ -111,3 +111,29 @@ export {
   defaultSelectorConfig,
 } from './selectors'
 export type { SelectorConfig } from './selectors'
+
+// Tree Shaking & Dead Code Elimination
+export {
+  ClassUsageTracker,
+  CSSMinifier,
+  CSSDeduplicator,
+  ProductionOptimizer,
+  defaultTreeShakingConfig,
+} from './tree-shaking'
+export type { TreeShakingConfig } from './tree-shaking'
+
+// Critical CSS Extraction
+export {
+  CriticalCSSExtractor,
+  CriticalCSSMeasurement,
+  defaultCriticalCSSConfig,
+} from './critical-css'
+export type { CriticalCSSConfig } from './critical-css'
+
+// Performance Monitoring
+export {
+  PerformanceMonitor,
+  BuildReporter,
+  Benchmarker,
+} from './performance'
+export type { PerformanceMetrics, BuildReport } from './performance'
