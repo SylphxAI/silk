@@ -3,12 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import {
-  CSSMinifier,
-  CSSDeduplicator,
-  CriticalCSSExtractor,
-  PerformanceMonitor,
-} from './index'
+import { CSSMinifier, CSSDeduplicator } from './tree-shaking'
+import { CriticalCSSExtractor } from './critical-css'
+import { PerformanceMonitor } from './performance'
 
 describe('Production Optimization', () => {
   describe('CSSMinifier', () => {
