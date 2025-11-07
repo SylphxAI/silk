@@ -79,8 +79,20 @@ export function withSilk(
     },
   }
 
+  // Warn if Turbopack is enabled
+  if (nextConfig.turbo || process.env.TURBOPACK === '1') {
+    console.warn(
+      '\n⚠️  Silk does not support Turbopack yet (unplugin limitation).\n' +
+      '   Automatically disabling Turbopack and using webpack instead.\n' +
+      '   See: https://github.com/unjs/unplugin/issues/302\n'
+    )
+  }
+
   return {
     ...nextConfig,
+    // Disable Turbopack since unplugin doesn't support it yet
+    // https://github.com/unjs/unplugin/issues/302
+    turbo: undefined,
     webpack(config, options) {
       const { isServer, dev } = options
 
