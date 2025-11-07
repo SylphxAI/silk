@@ -11,9 +11,9 @@
  */
 
 import type { PluginObj } from '@babel/core'
-import type { PluginState } from './types'
-import { programVisitor } from './visitors/program'
-import { handleCallExpression } from './visitors/call-expression'
+import type { PluginState } from './types.js'
+import { programVisitor } from './visitors/program.js'
+import { handleCallExpression } from './visitors/call-expression.js'
 
 /**
  * Babel plugin entry point

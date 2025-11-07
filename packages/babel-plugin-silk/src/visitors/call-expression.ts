@@ -4,9 +4,9 @@
 
 import type { NodePath } from '@babel/core'
 import type * as t from '@babel/types'
-import type { PluginState } from '../types'
-import { extractStaticStyles } from '../extractors/static-extractor'
-import { generateAtomicCSS } from '../generators/css-generator'
+import type { PluginState } from '../types.js'
+import { extractStaticStyles } from '../extractors/static-extractor.js'
+import { generateAtomicCSS } from '../generators/css-generator.js'
 
 /**
  * Check if a CallExpression is a css() call from @sylphx/silk

@@ -4,7 +4,7 @@
 
 import type { NodePath } from '@babel/core'
 import type * as t from '@babel/types'
-import type { ExtractedStyles } from '../types'
+import type { ExtractedStyles } from '../types.js'
 
 /**
  * Extract static styles from a css() call argument

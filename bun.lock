@@ -13,6 +13,15 @@
         "vitest": "^1.6.0",
       },
     },
+    "examples/babel-plugin-test": {
+      "name": "babel-plugin-test",
+      "version": "0.0.0",
+      "dependencies": {
+        "@babel/core": "^7.23.0",
+        "@sylphx/babel-plugin-silk": "workspace:*",
+        "@sylphx/silk": "workspace:*",
+      },
+    },
     "examples/react-demo": {
       "name": "react-demo",
       "version": "0.0.5",
@@ -721,6 +730,8 @@
     "available-typed-arrays": ["available-typed-arrays@1.0.7", "", { "dependencies": { "possible-typed-array-names": "^1.0.0" } }, "sha512-wvUjBtSGN7+7SjNpq/9M2Tg350UZD3q62IFZLbRAR1bSMlCo1ZaeW+BJ+D090e4hIIZLBcTDWe4Mh4jvUDajzQ=="],
 
     "axobject-query": ["axobject-query@4.1.0", "", {}, "sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ=="],
+
+    "babel-plugin-test": ["babel-plugin-test@workspace:examples/babel-plugin-test"],
 
     "bail": ["bail@2.0.2", "", {}, "sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw=="],
 

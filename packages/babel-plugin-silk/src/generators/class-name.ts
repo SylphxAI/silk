@@ -2,8 +2,8 @@
  * Class name generation for atomic CSS
  */
 
-import { hashPropertyValue, simpleHash } from '../utils/hash'
-import type { PluginOptions } from '../types'
+import { hashPropertyValue, simpleHash } from '../utils/hash.js'
+import type { PluginOptions } from '../types.js'
 
 /**
  * Generate a unique class name for a CSS property-value pair

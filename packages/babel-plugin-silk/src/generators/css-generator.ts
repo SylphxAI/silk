@@ -8,13 +8,13 @@ import {
   isPseudoSelector,
   resolvePseudoSelector,
   isResponsiveValue,
-} from '../utils/css-helpers'
+} from '../utils/css-helpers.js'
 import {
   generateClassName,
   generatePseudoClassName,
   generateResponsiveClassName,
-} from './class-name'
-import type { GeneratedCSS, PluginOptions } from '../types'
+} from './class-name.js'
+import type { GeneratedCSS, PluginOptions } from '../types.js'
 
 /**
  * Default breakpoint configuration

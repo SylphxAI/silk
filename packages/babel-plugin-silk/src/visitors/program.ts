@@ -4,7 +4,7 @@
 
 import type { NodePath } from '@babel/core'
 import type * as t from '@babel/types'
-import type { PluginState, SilkMetadata } from '../types'
+import type { PluginState, SilkMetadata } from '../types.js'
 
 const PLUGIN_VERSION = '0.1.0'
 

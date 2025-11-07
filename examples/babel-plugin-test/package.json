@@ -1,0 +1,14 @@
+{
+  "name": "babel-plugin-test",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "@sylphx/silk": "workspace:*",
+    "@sylphx/babel-plugin-silk": "workspace:*",
+    "@babel/core": "^7.23.0"
+  }
+}
