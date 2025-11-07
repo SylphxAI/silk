@@ -1,9 +1,6 @@
-import { createStyleSystem } from '@sylphx/silk'
+import { css } from '@sylphx/silk'
 
-// Create style system
-const { css } = createStyleSystem()
-
-// Test 1: Simple static styles
+// Test 1: Simple static styles (transformed at build-time)
 const button = css({
   bg: 'blue',
   p: 4,

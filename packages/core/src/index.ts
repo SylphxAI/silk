@@ -7,6 +7,16 @@
 export { createStyleSystem, cssRules } from './runtime'
 export type { StyleSystem } from './runtime'
 
+// Build-time only: Default css function for zero-runtime compilation
+// This is a stub that gets transformed by @sylphx/babel-plugin-silk at build time
+// DO NOT use at runtime - it will throw an error
+export function css(...args: any[]): string {
+  throw new Error(
+    '@sylphx/silk: css() should be transformed at build-time by @sylphx/babel-plugin-silk. ' +
+    'Make sure you have the Vite/Webpack plugin configured correctly.'
+  )
+}
+
 // NOTE: Build-time optimization tools have been moved to @sylphx/silk/optimizer
 // to prevent bundling Node.js-only code (lightningcss) in browser builds.
 //

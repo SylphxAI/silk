@@ -9,6 +9,10 @@ import { createUnplugin } from 'unplugin'
 import type { SilkMetadata } from '@sylphx/babel-plugin-silk'
 import * as path from 'node:path'
 import { gzipSync, brotliCompressSync, constants } from 'node:zlib'
+// @ts-ignore - Babel preset types not needed
+import presetReact from '@babel/preset-react'
+// @ts-ignore - Babel preset types not needed
+import presetTypeScript from '@babel/preset-typescript'
 
 export interface CompressionOptions {
   /**
@@ -145,8 +149,8 @@ export const unpluginSilk = createUnplugin<SilkPluginOptions>((options = {}) => 
         const result = transformSync(code, {
           filename: id,
           presets: [
-            ['@babel/preset-react', { runtime: 'automatic' }],
-            ['@babel/preset-typescript', { isTSX: true, allExtensions: true }],
+            [presetReact, { runtime: 'automatic' }],
+            [presetTypeScript, { isTSX: true, allExtensions: true }],
           ],
           plugins: [[babelPluginSilk, babelOpts]],
           sourceMaps: true,
@@ -183,88 +187,80 @@ export const unpluginSilk = createUnplugin<SilkPluginOptions>((options = {}) => 
       }
     },
 
+    // Universal hook - works for all bundlers
+    async generateBundle(this: any) {
+      if (cssRules.size === 0) return
+
+      // Generate CSS
+      let css = Array.from(cssRules.values()).join('\n')
+
+      if (shouldMinify ?? isProduction) {
+        css = minifyCSS(css)
+      }
+
+      // Emit main CSS file
+      this.emitFile({
+        type: 'asset',
+        fileName: outputFile,
+        source: css,
+      })
+
+      // Generate compressed versions
+      if (isProduction) {
+        const cssBuffer = Buffer.from(css, 'utf-8')
+        const originalSize = cssBuffer.length
+
+        // Brotli compression
+        if (compressionConfig.brotli) {
+          try {
+            const compressed = brotliCompressSync(cssBuffer, {
+              params: {
+                [constants.BROTLI_PARAM_QUALITY]: compressionConfig.brotliQuality,
+              },
+            })
+            this.emitFile({
+              type: 'asset',
+              fileName: `${outputFile}.br`,
+              source: compressed,
+            })
+
+            const savings = ((1 - compressed.length / originalSize) * 100).toFixed(1)
+            console.log(`[Silk] Brotli: ${formatBytes(compressed.length)} (-${savings}%)`)
+          } catch (error) {
+            console.warn('[Silk] Brotli compression failed:', error)
+          }
+        }
+
+        // Gzip compression
+        if (compressionConfig.gzip) {
+          try {
+            const compressed = gzipSync(cssBuffer, {
+              level: compressionConfig.gzipLevel,
+            })
+            this.emitFile({
+              type: 'asset',
+              fileName: `${outputFile}.gz`,
+              source: compressed,
+            })
+
+            const savings = ((1 - compressed.length / originalSize) * 100).toFixed(1)
+            console.log(`[Silk] Gzip: ${formatBytes(compressed.length)} (-${savings}%)`)
+          } catch (error) {
+            console.warn('[Silk] Gzip compression failed:', error)
+          }
+        }
+
+        // Summary
+        console.log(`\n📦 Silk CSS Bundle:`)
+        console.log(`  Original: ${formatBytes(originalSize)} (${outputFile})`)
+        console.log(`  Rules: ${cssRules.size} atomic classes\n`)
+      }
+    },
+
     // Vite-specific hooks
     vite: {
       configResolved(config) {
         isProduction = config.command === 'build' && config.mode === 'production'
-      },
-
-      async generateBundle() {
-        if (cssRules.size === 0) return
-
-        // Generate CSS
-        let css = Array.from(cssRules.values()).join('\n')
-
-        if (shouldMinify ?? isProduction) {
-          css = minifyCSS(css)
-        }
-
-        // Emit main CSS file
-        this.emitFile({
-          type: 'asset',
-          fileName: outputFile,
-          source: css,
-        })
-
-        // Generate compressed versions
-        if (isProduction) {
-          const cssBuffer = Buffer.from(css, 'utf-8')
-          const originalSize = cssBuffer.length
-
-          // Brotli compression
-          if (compressionConfig.brotli) {
-            try {
-              const compressed = brotliCompressSync(cssBuffer, {
-                params: {
-                  [constants.BROTLI_PARAM_QUALITY]: compressionConfig.brotliQuality,
-                },
-              })
-              this.emitFile({
-                type: 'asset',
-                fileName: `${outputFile}.br`,
-                source: compressed,
-              })
-
-              const savings = ((1 - compressed.length / originalSize) * 100).toFixed(1)
-              console.log(`[Silk] Brotli: ${formatBytes(compressed.length)} (-${savings}%)`)
-            } catch (error) {
-              console.warn('[Silk] Brotli compression failed:', error)
-            }
-          }
-
-          // Gzip compression
-          if (compressionConfig.gzip) {
-            try {
-              const compressed = gzipSync(cssBuffer, {
-                level: compressionConfig.gzipLevel,
-              })
-              this.emitFile({
-                type: 'asset',
-                fileName: `${outputFile}.gz`,
-                source: compressed,
-              })
-
-              const savings = ((1 - compressed.length / originalSize) * 100).toFixed(1)
-              console.log(`[Silk] Gzip: ${formatBytes(compressed.length)} (-${savings}%)`)
-            } catch (error) {
-              console.warn('[Silk] Gzip compression failed:', error)
-            }
-          }
-
-          // Summary
-          console.log(`\n📦 Silk CSS Bundle:`)
-          console.log(`  Original: ${formatBytes(originalSize)} (${outputFile})`)
-          console.log(`  Rules: ${cssRules.size} atomic classes\n`)
-        }
-      },
-
-      closeBundle() {
-        if (isProduction && cssRules.size > 0) {
-          const css = Array.from(cssRules.values()).join('\n')
-          console.log(
-            `[Silk] Final bundle: ${cssRules.size} atomic classes, ${formatBytes(Buffer.byteLength(css, 'utf-8'))}`
-          )
-        }
       },
     },
 
