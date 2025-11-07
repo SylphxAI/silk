@@ -1,0 +1,49 @@
+{
+  "name": "@sylphx/babel-plugin-silk",
+  "version": "0.1.0",
+  "description": "Babel plugin for zero-runtime Silk CSS-in-TypeScript compilation",
+  "keywords": [
+    "babel-plugin",
+    "css-in-js",
+    "build-time-compilation",
+    "zero-runtime",
+    "atomic-css",
+    "silk"
+  ],
+  "author": "SylphX Ltd",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/**/*.js",
+    "dist/**/*.d.ts",
+    "!dist/**/*.test.*"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/types": "^7.23.0"
+  },
+  "devDependencies": {
+    "@babel/preset-typescript": "^7.23.0",
+    "@types/babel__core": "^7.20.5",
+    "@types/babel__traverse": "^7.28.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.6.0"
+  },
+  "peerDependencies": {
+    "@babel/core": "^7.0.0"
+  }
+}
