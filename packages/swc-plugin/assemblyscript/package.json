@@ -1,0 +1,22 @@
+{
+  "name": "silk-transform-wasm",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AssemblyScript WASM module for Silk CSS transformation",
+  "scripts": {
+    "asbuild:debug": "asc assembly/index.ts --target debug",
+    "asbuild:release": "asc assembly/index.ts --target release --optimize --converge",
+    "asbuild": "npm run asbuild:release",
+    "test": "asp --verbose"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.27.0",
+    "@assemblyscript/loader": "^0.27.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./build/release.js",
+      "types": "./build/release.d.ts"
+    }
+  }
+}

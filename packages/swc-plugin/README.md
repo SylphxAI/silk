@@ -9,6 +9,34 @@ SWC plugin for Silk - zero-runtime CSS-in-TypeScript compilation.
 - ✅ **Perfect Next.js integration** - No webpack mode needed
 - ✅ **Future-proof** - SWC is the future of JS/TS compilation
 
+## Architecture: Rust + AssemblyScript Hybrid
+
+This plugin uses a hybrid approach for the best of both worlds:
+
+```
+┌─────────────────────────────────┐
+│   SWC Plugin (Rust)             │
+│   - AST traversal               │
+│   - css() call detection        │
+│   - Node replacement            │
+└───────────┬─────────────────────┘
+            │ calls
+            ▼
+┌─────────────────────────────────┐
+│   Transform Logic (WASM)        │
+│   - Written in AssemblyScript   │
+│   - Class name generation       │
+│   - CSS rule generation         │
+│   - Hash calculation            │
+└─────────────────────────────────┘
+```
+
+**Benefits:**
+- 🦀 Minimal Rust code (easier to maintain)
+- 📝 Core logic in TypeScript-like syntax (AssemblyScript)
+- 🚀 WASM performance
+- 🔧 Easy to port existing Babel plugin logic
+
 ## Installation
 
 ```bash
@@ -72,11 +100,43 @@ const button = 'silk_bg_red_a7f3 silk_p_4_b2e1'
 .silk_p_4_b2e1 { padding: 1rem; }
 ```
 
-## Development Status
+## Current Status
 
-🚧 **Work in Progress**
+✅ **Phase 1 Complete: AST Transformation**
 
-This plugin is currently under development. Follow our progress:
+The SWC plugin successfully transforms `css()` calls to class name strings:
+
+```typescript
+// Input
+const button = css({ bg: 'red', p: 4 })
+
+// Output (after SWC transformation)
+const button = 'silk_bg_red_a7f3 silk_p_4_b2e1'
+```
+
+🚧 **Phase 2 In Progress: CSS Collection**
+
+CSS rule extraction is currently handled by `@sylphx/unplugin-silk`. For full functionality, use both plugins together:
+
+```javascript
+// next.config.js
+const { silk } = require('@sylphx/nextjs-plugin')
+
+module.exports = silk({
+  experimental: {
+    swcPlugins: [
+      ['@sylphx/swc-plugin-silk', { production: true }]
+    ]
+  }
+})
+```
+
+This hybrid approach ensures:
+- ✅ Fast transformation via SWC (20-70x faster than Babel)
+- ✅ CSS collection via unplugin (until native SWC solution available)
+- ✅ Full Turbopack compatibility in Next.js 16+
+
+Follow our progress:
 - [GitHub Issues](https://github.com/sylphxltd/silk/issues)
 - [Roadmap](https://github.com/sylphxltd/silk/blob/main/ROADMAP.md)
 

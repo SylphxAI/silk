@@ -28,7 +28,9 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "cargo build --release --target wasm32-wasip1",
+    "build:assemblyscript": "cd assemblyscript && npm run asbuild",
+    "build:rust": "cargo build --release --target wasm32-wasip1",
+    "build": "npm run build:assemblyscript && npm run build:rust",
     "test": "cargo test",
     "prepublishOnly": "npm run build"
   },
