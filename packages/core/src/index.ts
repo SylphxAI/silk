@@ -4,6 +4,7 @@
  */
 
 export { createStyleSystem, cssRules } from './runtime'
+export type { StyleSystem } from './runtime'
 export type {
   DesignConfig,
   TypedStyleProps,
@@ -11,6 +12,5 @@ export type {
   CSSProperties,
   NestedKeys,
   TokenScale,
-  StyleSystem,
 } from './types'
 export { defineConfig } from './config'

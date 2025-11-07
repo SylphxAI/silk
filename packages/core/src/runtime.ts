@@ -68,17 +68,21 @@ function resolveToken<C extends DesignConfig>(config: C, category: keyof C, valu
   const scale = config[category]
   if (!scale || typeof scale !== 'object') return value
 
+  const scaleObj = scale as Record<string, any>
+
   // Handle nested tokens like 'red.500'
   if (value.includes('.')) {
     const [parent, child] = value.split('.')
-    const parentObj = scale[parent]
-    if (parentObj && typeof parentObj === 'object') {
-      return (parentObj as Record<string, any>)[child] ?? value
+    if (parent && child) {
+      const parentObj = scaleObj[parent]
+      if (parentObj && typeof parentObj === 'object') {
+        return parentObj[child] ?? value
+      }
     }
   }
 
   // Handle direct tokens like 'lg'
-  return (scale as Record<string, any>)[value] ?? value
+  return scaleObj[value] ?? value
 }
 
 /**
@@ -89,6 +93,49 @@ function getCSSValue<C extends DesignConfig>(
   prop: string,
   value: string | number
 ): string {
+  // Token category mapping
+  const tokenMap: Record<string, keyof DesignConfig> = {
+    color: 'colors',
+    backgroundColor: 'colors',
+    borderColor: 'colors',
+    fontSize: 'fontSizes',
+    fontWeight: 'fontWeights',
+    lineHeight: 'lineHeights',
+    letterSpacing: 'letterSpacings',
+    borderRadius: 'radii',
+    boxShadow: 'shadows',
+    margin: 'spacing',
+    marginTop: 'spacing',
+    marginRight: 'spacing',
+    marginBottom: 'spacing',
+    marginLeft: 'spacing',
+    padding: 'spacing',
+    paddingTop: 'spacing',
+    paddingRight: 'spacing',
+    paddingBottom: 'spacing',
+    paddingLeft: 'spacing',
+    gap: 'spacing',
+    width: 'sizes',
+    height: 'sizes',
+    minWidth: 'sizes',
+    maxWidth: 'sizes',
+    minHeight: 'sizes',
+    maxHeight: 'sizes',
+  }
+
+  const category = tokenMap[prop]
+
+  // Try to resolve from design tokens first
+  if (category) {
+    const resolved = resolveToken(config, category, String(value))
+    // If token was resolved (value changed), return it
+    if (resolved !== String(value)) {
+      return resolved
+    }
+    // If token wasn't found and value is a number, continue to number handling
+  }
+
+  // Handle raw numeric values
   if (typeof value === 'number') {
     // Properties that should have 'px' appended
     const needsPx = [
@@ -120,41 +167,7 @@ function getCSSValue<C extends DesignConfig>(
     return String(value)
   }
 
-  // Try to resolve from design tokens
-  const tokenMap: Record<string, keyof DesignConfig> = {
-    color: 'colors',
-    backgroundColor: 'colors',
-    borderColor: 'colors',
-    fontSize: 'fontSizes',
-    fontWeight: 'fontWeights',
-    lineHeight: 'lineHeights',
-    letterSpacing: 'letterSpacings',
-    borderRadius: 'radii',
-    boxShadow: 'shadows',
-    margin: 'spacing',
-    marginTop: 'spacing',
-    marginRight: 'spacing',
-    marginBottom: 'spacing',
-    marginLeft: 'spacing',
-    padding: 'spacing',
-    paddingTop: 'spacing',
-    paddingRight: 'spacing',
-    paddingBottom: 'spacing',
-    paddingLeft: 'spacing',
-    gap: 'spacing',
-    width: 'sizes',
-    height: 'sizes',
-    minWidth: 'sizes',
-    maxWidth: 'sizes',
-    minHeight: 'sizes',
-    maxHeight: 'sizes',
-  }
-
-  const category = tokenMap[prop]
-  if (category) {
-    return resolveToken(config, category, value)
-  }
-
+  // Return string value as-is
   return value
 }
 
