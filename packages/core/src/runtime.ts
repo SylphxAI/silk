@@ -13,6 +13,12 @@ import {
   wrapInWhere,
   ClassNameGenerator,
 } from './selectors'
+import {
+  type ProductionConfig,
+  generateClassName,
+  optimizeCSS,
+  resetShortNameCounter,
+} from './production'
 
 // CSS rule storage for build-time extraction
 export const cssRules = new Map<string, string>()
@@ -193,6 +199,7 @@ function generateAtomicClass<C extends DesignConfig>(
   config: C,
   prop: string,
   value: string | number,
+  productionConfig: ProductionConfig,
   pseudo?: string
 ): string {
   const cssValue = getCSSValue(config, prop, value)
@@ -200,7 +207,7 @@ function generateAtomicClass<C extends DesignConfig>(
 
   // Create unique identifier for this style
   const styleId = `${prop}-${value}${pseudo ?? ''}`
-  const className = `zen-${hash(styleId)}`
+  const className = generateClassName(styleId, productionConfig)
 
   // Generate CSS rule
   const selector = pseudo ? `.${className}${pseudo}` : `.${className}`
@@ -217,9 +224,16 @@ function generateAtomicClass<C extends DesignConfig>(
  */
 export function createStyleSystem<C extends DesignConfig>(
   config: C,
-  options?: { optimize?: boolean }
+  options?: { optimize?: boolean } & ProductionConfig
 ) {
-  const { optimize = true } = options ?? {}
+  const { optimize = true, ...productionConfig } = options ?? {}
+  const prodConfig: ProductionConfig = {
+    production: productionConfig.production ?? false,
+    shortClassNames: productionConfig.shortClassNames ?? true,
+    minify: productionConfig.minify ?? true,
+    optimizeCSS: productionConfig.optimizeCSS ?? true,
+    classPrefix: productionConfig.classPrefix,
+  }
 
   function css(styles: TypedStyleProps<C>): StyleObject {
     const classNames: string[] = []
@@ -242,6 +256,7 @@ export function createStyleSystem<C extends DesignConfig>(
               config,
               nestedKey,
               nestedValue as string | number,
+              prodConfig,
               pseudo
             )
             classNames.push(className)
@@ -263,7 +278,7 @@ export function createStyleSystem<C extends DesignConfig>(
       }
 
       // Generate atomic class (property names are already normalized by optimizer)
-      const className = generateAtomicClass(config, key, value)
+      const className = generateAtomicClass(config, key, value, prodConfig)
       classNames.push(className)
     }
 
@@ -298,13 +313,22 @@ export function createStyleSystem<C extends DesignConfig>(
   }
 
   // Get all generated CSS rules (for extraction)
-  function getCSSRules(): string {
-    return Array.from(cssRules.values()).join('\n')
+  function getCSSRules(options?: { optimize?: boolean }): string {
+    const { optimize: shouldOptimize = prodConfig.optimizeCSS } = options ?? {}
+    const css = Array.from(cssRules.values()).join('\n')
+
+    if (shouldOptimize && prodConfig.production) {
+      const { optimized } = optimizeCSS(css)
+      return optimized
+    }
+
+    return css
   }
 
   // Reset CSS rules (useful for testing)
   function resetCSSRules(): void {
     cssRules.clear()
+    resetShortNameCounter()
   }
 
   return {

@@ -7,6 +7,17 @@
 export { createStyleSystem, cssRules } from './runtime'
 export type { StyleSystem } from './runtime'
 
+// Production optimizations
+export {
+  generateClassName,
+  generateShortClassName,
+  hashStyleId,
+  optimizeCSS,
+  resetShortNameCounter,
+  getShortNameCount,
+} from './production'
+export type { ProductionConfig, CSSOptimizationResult } from './production'
+
 // Extended runtime with all features
 export { createExtendedStyleSystem } from './runtime-extended'
 export type { ExtendedStyleSystem, ExtendedStyleSystemOptions } from './runtime-extended'
