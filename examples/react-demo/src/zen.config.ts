@@ -3,11 +3,11 @@
  * Define your design system with full type inference
  */
 
-import { defineConfig, createStyleSystem } from '@sylphx/zencss'
-import { createReactStyleSystem } from '@sylphx/zencss-react'
+import { defineConfig } from '@sylphx/zencss'
+import { createZenReact } from '@sylphx/zencss-react'
 
 // Define design tokens with 'as const' for type inference
-export const config = defineConfig({
+const config = defineConfig({
   colors: {
     brand: {
       50: '#f0f9ff',
@@ -134,25 +134,9 @@ export const config = defineConfig({
   },
 } as const)
 
-// Export config type first for re-use
+// Create and export ZenCSS React system with full type inference
+// This single function handles all the type gymnastics internally
+export const { styled, Box, Flex, Grid, Text, css, cx } = createZenReact(config)
+
+// Optionally export config type for reference
 export type Config = typeof config
-
-// Create style system with explicit type
-const styleSystem = createStyleSystem<Config>(config)
-
-// Create React bindings with explicit type - export as a whole object first
-const reactSystem = createReactStyleSystem<Config>(styleSystem)
-
-// Type helper for styled components
-type ZenStyledComponent<E extends keyof JSX.IntrinsicElements> = ReturnType<
-  typeof reactSystem.styled<E>
->
-
-// Then export individual items with explicit types for better type preservation
-export const styled = reactSystem.styled
-export const Box: ZenStyledComponent<'div'> = reactSystem.Box
-export const Flex: ZenStyledComponent<'div'> = reactSystem.Flex
-export const Grid: ZenStyledComponent<'div'> = reactSystem.Grid
-export const Text: ZenStyledComponent<'span'> = reactSystem.Text
-export const css = reactSystem.css
-export const cx = reactSystem.cx

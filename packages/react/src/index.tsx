@@ -12,6 +12,7 @@ import type {
   RefAttributes,
 } from 'react'
 import type { DesignConfig, TypedStyleProps, StyleSystem } from '@sylphx/zencss'
+import { createStyleSystem } from '@sylphx/zencss'
 
 // HTML elements that can be styled
 type StylableElements = keyof JSX.IntrinsicElements
@@ -201,3 +202,49 @@ export function createReactStyleSystem<C extends DesignConfig>(styleSystem: Styl
 }
 
 export type ReactStyleSystem<C extends DesignConfig> = ReturnType<typeof createReactStyleSystem<C>>
+
+/**
+ * Helper function to create a complete ZenCSS React setup with proper type inference
+ * This simplifies the config file by handling all the type gymnastics internally
+ *
+ * @example
+ * ```tsx
+ * // zen.config.ts
+ * import { defineConfig } from '@sylphx/zencss'
+ * import { createZenReact } from '@sylphx/zencss-react'
+ *
+ * const config = defineConfig({
+ *   colors: { brand: { 500: '#3b82f6' } }
+ * } as const)
+ *
+ * export const { styled, Box, Flex, Grid, Text, css, cx } = createZenReact(config)
+ * ```
+ */
+export function createZenReact<const C extends DesignConfig>(config: C) {
+  // Create style system with explicit type
+  const styleSystem = createStyleSystem<C>(config)
+
+  // Create React bindings with explicit type
+  const reactSystem = createReactStyleSystem<C>(styleSystem)
+
+  // Type helper for styled components to ensure proper JSX type inference
+  type ZenStyledComponent<E extends keyof JSX.IntrinsicElements> = ReturnType<
+    typeof reactSystem.styled<E>
+  >
+
+  // Return all exports with explicit types for better type preservation in JSX
+  return {
+    styled: reactSystem.styled,
+    Box: reactSystem.Box as ZenStyledComponent<'div'>,
+    Flex: reactSystem.Flex as ZenStyledComponent<'div'>,
+    Grid: reactSystem.Grid as ZenStyledComponent<'div'>,
+    Text: reactSystem.Text as ZenStyledComponent<'span'>,
+    css: reactSystem.css,
+    cx: reactSystem.cx,
+    // Also export the underlying systems for advanced use cases
+    styleSystem,
+    reactSystem,
+  }
+}
+
+export type ZenReactSystem<C extends DesignConfig> = ReturnType<typeof createZenReact<C>>
