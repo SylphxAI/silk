@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/zencss-vite-plugin",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Vite plugin for ZenCSS - Build-time CSS extraction",
   "keywords": [
     "zencss",

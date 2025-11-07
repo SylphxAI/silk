@@ -31,9 +31,10 @@ ZenCSS is a **high-performance** CSS-in-TypeScript library that delivers **indus
 - 🎯 **Only framework with critical CSS** - unique competitive advantage
 
 ### **Developer Experience**
-- 🎯 **Type Safe** - Full TypeScript support with perfect inference
+- 🎯 **Strict Type Safety** - Only design tokens allowed, compile-time validation
 - ✨ **Zero Codegen** - No build step for types, instant autocomplete
 - 🚀 **Zero Runtime** - CSS extracted at build time, 0 bytes overhead
+- 🔒 **Design System Enforcement** - Invalid tokens caught at compile time
 - 📊 **Performance Monitoring** - Built-in build analytics
 - 🌲 **Modern CSS** - @layer support, :where() selector, zero specificity
 
@@ -148,9 +149,9 @@ css({ color: 'invalid.500' })  // ❌ Compile error
 
 ## Core Features
 
-### Type Inference Without Codegen
+### Strict Type Safety (No Codegen Required)
 
-ZenCSS uses TypeScript's template literal types to infer types directly from your config - no codegen required:
+ZenCSS enforces your design system at compile time. Only tokens defined in your config are allowed - invalid values produce TypeScript errors before they reach production.
 
 ```typescript
 const config = defineConfig({
@@ -160,34 +161,55 @@ const config = defineConfig({
   },
   spacing: { 4: '1rem', 8: '2rem' },
   fontSizes: { base: '1rem', lg: '1.125rem' }
-} as const)  // ← 'as const' is key for type inference
+} as const)  // ← 'as const' enables type inference
 
-// TypeScript automatically infers:
+// TypeScript automatically infers strict union types:
 // type ColorToken = 'brand.500' | 'brand.600' | 'gray.900'
-// type SpacingToken = '4' | '8'
+// type SpacingToken = 4 | 8 (numbers for spacing/sizing)
 // type FontSizeToken = 'base' | 'lg'
 ```
 
-**In React components:**
+**Strict Type Safety in Action:**
 ```tsx
-// Full autocomplete for all design tokens!
+// ✅ VALID - Using design tokens
 <Box
   bg="brand.500"      // ✅ Autocomplete: brand.500, brand.600, gray.900
-  color="gray.900"    // ✅ Full type safety
-  p={4}               // ✅ Autocomplete: 4, 8
+  color="gray.900"    // ✅ Type-safe design token
+  p={4}               // ✅ Number or token: 4, 8
   fontSize="lg"       // ✅ Autocomplete: base, lg
 >
   Hello ZenCSS
 </Box>
 
-// Invalid tokens produce TypeScript errors
-<Box color="invalid.500">  // ❌ Compile error
-<Box p={999}>              // ❌ Compile error
+// ❌ INVALID - Compile-time errors
+<Box color="purple.500">   // ❌ Error: "purple" not in config
+<Box bg="invalid.500">     // ❌ Error: "invalid" not in config
+<Box rounded="super">      // ❌ Error: "super" not in radii config
+<Box p="custom">           // ❌ Error: must be number or valid token
+
+// ✅ ESCAPE HATCH - Use style prop for custom values
+<Box
+  bg="brand.500"
+  style={{
+    background: 'linear-gradient(to right, #ff0000, #00ff00)',
+    boxShadow: '0 0 20px rgba(255, 0, 255, 0.5)'
+  }}
+>
+  Custom styles outside design system
+</Box>
 ```
+
+**Benefits:**
+- 🔒 **Design system enforcement** - No more typos or invalid tokens
+- 💡 **Autocomplete** - IDE shows only valid design tokens
+- 🐛 **Catch errors early** - Invalid tokens caught at compile time, not runtime
+- 📖 **Self-documenting** - Types show exactly what tokens are available
+- 🎯 **Escape hatch** - Use `style` prop for one-off custom values
 
 **vs Panda CSS:**
 - ❌ Panda requires `panda codegen` to generate `styled-system/` directory
-- ✅ ZenCSS: zero codegen, instant autocomplete, faster type checking
+- ❌ Panda allows arbitrary strings by default (less strict)
+- ✅ ZenCSS: zero codegen, instant autocomplete, stricter type safety
 - ✅ Simpler setup: just `export const { Box, ... } = createZenReact(config)`
 
 ### Critical CSS Extraction
