@@ -5,9 +5,14 @@
 // Extract nested keys from object: { colors: { red: { 500: 'xxx' } } } -> 'red.500'
 export type NestedKeys<T, Prefix extends string = ''> = T extends object
   ? {
-      [K in keyof T & string]: T[K] extends object
-        ? T[K] extends { [key: string]: string | number }
-          ? `${Prefix}${K}.${keyof T[K] & string}`
+      [K in keyof T & string]: T[K] extends string | number
+        ? `${Prefix}${K}`
+        : T[K] extends object
+        ? T[K] extends readonly any[]
+          ? `${Prefix}${K}`
+          : // Check if all values are primitives (this is a leaf object like { 500: '#fff', 600: '#eee' })
+          [T[K][keyof T[K]]] extends [string | number]
+          ? `${Prefix}${K}.${keyof T[K] & (string | number)}`
           : NestedKeys<T[K], `${Prefix}${K}.`>
         : `${Prefix}${K}`
     }[keyof T & string]

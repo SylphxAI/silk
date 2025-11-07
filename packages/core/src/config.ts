@@ -13,8 +13,10 @@ import type { DesignConfig } from './types'
  *     red: { 500: '#ef4444' }
  *   }
  * } as const)
+ *
+ * IMPORTANT: Always use 'as const' assertion for proper type inference!
  */
-export function defineConfig<T extends DesignConfig>(config: T): T {
+export function defineConfig<const T extends DesignConfig>(config: T): T {
   return config
 }
 
