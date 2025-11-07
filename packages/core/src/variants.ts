@@ -9,6 +9,7 @@ import type {
   RecipeVariantProps,
   CompoundVariant,
   VariantDefinition,
+  RecipeFunction,
 } from './types-extended'
 
 /**
