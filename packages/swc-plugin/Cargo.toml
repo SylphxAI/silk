@@ -11,7 +11,7 @@ authors = ["SylphX Ltd"]
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-swc_core = { version = "0.106.16", features = [
+swc_core = { version = "33.0.0", features = [
   "ecma_ast",
   "ecma_visit",
   "ecma_plugin_transform",
@@ -21,7 +21,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 [dev-dependencies]
-swc_ecma_transforms_testing = "0.106.16"
+swc_ecma_transforms_testing = "33.0.0"
 testing = "0.42.0"
 
 [profile.release]

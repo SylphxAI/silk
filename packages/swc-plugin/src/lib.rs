@@ -259,25 +259,15 @@ fn is_css_call(call: &CallExpr) -> bool {
 
 /// SWC plugin entry point
 #[plugin_transform]
-pub fn process_transform(program: Program, metadata: TransformPluginProgramMetadata) -> Program {
+pub fn process_transform(mut program: Program, metadata: TransformPluginProgramMetadata) -> Program {
     let config = metadata
         .get_transform_plugin_config()
         .and_then(|json_str| serde_json::from_str::<Config>(&json_str).ok())
         .unwrap_or_default();
 
-    program.apply(SilkTransformVisitor::new(config))
-}
-
-// Apply the visitor to the program
-trait Apply {
-    fn apply(self, visitor: SilkTransformVisitor) -> Self;
-}
-
-impl Apply for Program {
-    fn apply(mut self, mut visitor: SilkTransformVisitor) -> Self {
-        self.visit_mut_with(&mut visitor);
-        self
-    }
+    let mut visitor = SilkTransformVisitor::new(config);
+    program.visit_mut_with(&mut visitor);
+    program
 }
 
 #[cfg(test)]
