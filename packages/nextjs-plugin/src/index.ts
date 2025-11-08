@@ -76,20 +76,23 @@ export function withSilk(
     },
   }
 
-  // Warn if Turbopack is enabled
-  if (nextConfig.turbo || process.env.TURBOPACK === '1') {
-    console.warn(
-      '\n⚠️  Silk does not support Turbopack yet (unplugin limitation).\n' +
-      '   Automatically disabling Turbopack and using webpack instead.\n' +
-      '   See: https://github.com/unjs/unplugin/issues/302\n'
-    )
-  }
+  // Detect Turbopack mode
+  const useTurbopack = nextConfig.turbo !== undefined || process.env.TURBOPACK === '1'
+
+  // SWC plugin configuration for Turbopack
+  const swcPluginConfig = useTurbopack ? {
+    experimental: {
+      ...nextConfig.experimental,
+      swcPlugins: [
+        ['@sylphx/swc-plugin-silk', babelOptions as Record<string, unknown>] as [string, Record<string, unknown>],
+        ...(nextConfig.experimental?.swcPlugins || []),
+      ],
+    },
+  } : {}
 
   return {
     ...nextConfig,
-    // Disable Turbopack since unplugin doesn't support it yet
-    // https://github.com/unjs/unplugin/issues/302
-    turbo: undefined,
+    ...swcPluginConfig,
     webpack(config, options) {
       const { isServer, dev, dir } = options
 
