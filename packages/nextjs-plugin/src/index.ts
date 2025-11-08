@@ -140,4 +140,4 @@ export default withSilk;
 
 // Named exports
 export { withSilk as silk };
-export type { SilkNextConfig, SilkWebpackPluginOptions };
+export type { SilkWebpackPluginOptions };
