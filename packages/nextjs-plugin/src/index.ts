@@ -7,8 +7,8 @@
 import type { NextConfig } from 'next'
 import type { DesignConfig } from '@sylphx/silk'
 import { unpluginSilk, type SilkPluginOptions } from '@sylphx/silk-vite-plugin'
-import VirtualModulesPlugin from 'webpack-virtual-modules'
 import * as path from 'node:path'
+import * as fs from 'node:fs'
 
 export interface SilkNextConfig extends SilkPluginOptions {
   /**
@@ -107,54 +107,65 @@ export function withSilk(
 
       // Automatic CSS injection for client bundles
       if (!isServer && inject) {
-        // Create virtual modules with initial empty content
-        // This ensures the module exists when webpack starts resolving
-        const virtualModules = new VirtualModulesPlugin({
-          'node_modules/__silk__/styles.css': '/* Silk CSS - Generated at build time */',
-          'node_modules/__silk__/auto-inject.js': "import './styles.css';"
-        })
-        config.plugins.push(virtualModules)
+        // Use .next directory for generated files (cleaned between builds)
+        const silkDir = path.join(dir, '.next', 'silk-auto')
+        const injectPath = path.join(silkDir, 'inject.js')
 
-        // Add custom plugin to update virtual modules with actual CSS
+        // Ensure directory exists
+        if (!fs.existsSync(silkDir)) {
+          fs.mkdirSync(silkDir, { recursive: true })
+        }
+
+        // Create initial inject file
+        fs.writeFileSync(injectPath, `// Silk CSS auto-inject\n// Updated during build\n`)
+
+        // Add custom plugin to collect and inject CSS
         config.plugins.push({
           apply(compiler: any) {
-            compiler.hooks.thisCompilation.tap('SilkAutoInject', (compilation: any) => {
-              // Hook into processAssets to access the generated CSS
-              compilation.hooks.processAssets.tap(
-                {
-                  name: 'SilkAutoInject',
-                  // Run after Silk plugin generates CSS
-                  stage: compilation.constructor.PROCESS_ASSETS_STAGE_ADDITIONAL,
-                },
-                () => {
-                  // Get CSS content from compilation assets
-                  const cssAsset = compilation.assets[outputFile]
-                  if (!cssAsset) return
+            compiler.hooks.emit.tapAsync('SilkAutoInject', (compilation: any, callback: any) => {
+              // Collect all CSS from Silk-generated assets
+              let allCSS = ''
 
-                  const cssContent = cssAsset.source()
+              // Check for silk.css in compilation assets
+              if (compilation.assets[outputFile]) {
+                allCSS = compilation.assets[outputFile].source()
+              } else {
+                // Fallback: collect from all CSS assets
+                Object.keys(compilation.assets).forEach(filename => {
+                  if (filename.endsWith('.css') && !filename.includes('node_modules')) {
+                    const asset = compilation.assets[filename]
+                    if (asset && typeof asset.source === 'function') {
+                      const content = asset.source()
+                      if (content && content.includes('silk_')) {
+                        allCSS += content
+                      }
+                    }
+                  }
+                })
+              }
 
-                  // Update virtual CSS file with actual generated content
-                  virtualModules.writeModule(`node_modules/__silk__/styles.css`, cssContent)
-                }
-              )
+              if (allCSS) {
+                // Update inject file with CSS
+                const injectContent = `// Silk CSS auto-inject\nif (typeof document !== 'undefined') {\n  const style = document.createElement('style');\n  style.textContent = ${JSON.stringify(allCSS)};\n  document.head.appendChild(style);\n}\n`
+                fs.writeFileSync(injectPath, injectContent)
+              }
+
+              callback()
             })
           },
         })
 
-        // Inject virtual module into all client entries
+        // Inject into all client entries
         const originalEntry = config.entry
         config.entry = async () => {
           const entries = await originalEntry()
 
-          // Add virtual module to all client entries
           for (const [key, value] of Object.entries(entries)) {
-            // Skip server and middleware entries
             if (key.includes('server') || key.includes('middleware')) continue
 
             if (Array.isArray(value)) {
-              // Inject at the beginning so CSS loads first
-              if (!value.includes('__silk__/auto-inject')) {
-                value.unshift('__silk__/auto-inject')
+              if (!value.includes(injectPath)) {
+                value.unshift(injectPath)
               }
             }
           }
