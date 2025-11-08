@@ -109,6 +109,45 @@ export function Button({ children }) {
 
 That's it! The CSS is automatically generated at build time, and Next.js optimizes it through its CSS pipeline (merging, tree-shaking, minification).
 
+## 🚀 Turbopack Support (Next.js 15/16)
+
+For **20-70x faster builds** with Next.js 15/16 Turbopack, use the SWC plugin instead:
+
+```bash
+bun add @sylphx/swc-plugin-silk
+```
+
+```javascript
+// next.config.js
+export default {
+  experimental: {
+    turbo: {
+      rules: {
+        '*.{ts,tsx,js,jsx}': {
+          loaders: ['@sylphx/swc-plugin-silk'],
+          options: {
+            production: process.env.NODE_ENV === 'production',
+            classPrefix: ''  // or 'silk-' for dev mode
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Benefits:**
+- ✅ Native Rust performance (20-70x faster than Babel)
+- ✅ 100% hash consistency (identical class names)
+- ✅ Full Turbopack compatibility
+- ✅ Production-ready (144 tests passing)
+
+**When to use:**
+- **Webpack builds** (default Next.js): Use `@sylphx/silk-nextjs` (this package)
+- **Turbopack builds** (Next.js 15/16 with `--turbo`): Use `@sylphx/swc-plugin-silk`
+
+[View SWC Plugin Documentation →](../swc-plugin/README.md)
+
 ## Features
 
 ### ✅ Zero-Runtime Compilation

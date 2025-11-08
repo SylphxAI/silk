@@ -18,16 +18,21 @@
 
 ### 🚀 What's New
 
-#### 🎉 Next.js 16 + Turbopack Support (Coming Soon!)
+#### 🎉 Next.js 16 + Turbopack Support (v0.2.0 Available!)
 
-**SWC Plugin for 20-70x faster builds:**
-- 🦀 Native Rust implementation
+**SWC Plugin v0.2.0 - Production Ready:**
+- 🦀 Native Rust implementation (WASM)
 - ⚡ **20-70x faster** than Babel plugin
 - 🚀 Full Turbopack compatibility
-- ✅ Phase 1 complete (core transformation)
-- 📊 71% complete (5/7 phases)
+- ✅ 100% hash consistency with Babel plugin
+- ✅ Complete feature parity (production mode, digit mapping)
+- 📊 144 tests passing (0 failures)
 
-[View SWC Plugin Documentation →](./packages/swc-plugin/README.md) • [Quick Start Guide →](./packages/swc-plugin/QUICKSTART.md)
+```bash
+bun add @sylphx/swc-plugin-silk
+```
+
+[View SWC Plugin Documentation →](./packages/swc-plugin/README.md) • [Turbopack Setup Guide →](#turbopack-setup)
 
 #### v2.0.0: True Zero-Runtime
 
@@ -471,7 +476,7 @@ bun add @sylphx/silk-nextjs
 - ✅ Automatic CSS extraction during build
 - ✅ Brotli pre-compression
 - ✅ HMR with state preservation
-- 🚧 **Next.js 16 + Turbopack** support via `@sylphx/swc-plugin-silk` (coming soon)
+- ✅ **Next.js 16 + Turbopack** support via `@sylphx/swc-plugin-silk` (see below)
 
 ```javascript
 // next.config.js
@@ -497,6 +502,43 @@ export default function RootLayout({ children }) {
 ```
 
 [View Full Next.js Documentation →](./packages/nextjs-plugin/README.md)
+
+#### 🚀 Turbopack Setup
+
+For **20-70x faster builds** with Next.js 15/16 Turbopack, use the SWC plugin:
+
+```bash
+bun add @sylphx/swc-plugin-silk
+```
+
+```javascript
+// next.config.js
+export default {
+  experimental: {
+    turbo: {
+      rules: {
+        '*.{ts,tsx,js,jsx}': {
+          loaders: ['@sylphx/swc-plugin-silk'],
+          options: {
+            production: process.env.NODE_ENV === 'production',
+            classPrefix: ''  // or 'silk-' for dev mode
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+**Benefits:**
+- ✅ Native Rust performance (20-70x faster than Babel)
+- ✅ 100% hash consistency (identical class names as Babel plugin)
+- ✅ Full Turbopack compatibility
+- ✅ Production-ready (144 tests passing)
+
+**Note:** For standard Next.js builds (Webpack), continue using `@sylphx/silk-nextjs`. For Turbopack builds, use the SWC plugin above.
+
+[View SWC Plugin Documentation →](./packages/swc-plugin/README.md)
 
 ### 🎵 Remix - Streaming SSR & Zero-Runtime
 

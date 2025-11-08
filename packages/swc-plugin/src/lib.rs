@@ -554,4 +554,124 @@ mod tests {
         println!("{}", "-".repeat(60));
         println!("✅ All class names match Babel plugin!\n");
     }
+
+    #[test]
+    fn test_extended_babel_swc_consistency() {
+        // Extended test cases from extended-test-cases.mjs
+        // Verifies more comprehensive set of properties and values
+        let config = Config {
+            production: true,
+            class_prefix: String::new(),
+        };
+
+        let test_cases = vec![
+            // Basic colors
+            ("bg", "red", "oqmaqr"),
+            ("bg", "blue", "ey45xi"),
+            ("bg", "#ff0000", "mjp4tr"),
+            ("bg", "rgb(255, 0, 0)", "hwc6q52"),
+            // Spacing
+            ("p", "0", "h44nbof"),
+            ("p", "1", "oy0c2k"),
+            ("p", "2", "is8hzn"),
+            ("p", "4", "azg4xx"),
+            ("p", "8", "js61pc"),
+            ("p", "16", "hvblvfl"),
+            // Typography
+            ("fontSize", "12px", "hvklyzl"),
+            ("fontSize", "14px", "lmoox4"),
+            ("fontSize", "16px", "h5ld1bc"),
+            ("fontWeight", "bold", "hq6c490"),
+            ("fontWeight", "400", "fxvgn8"),
+            // Layout
+            ("width", "100%", "hoz6j9l"),
+            ("width", "50%", "jkrbrw"),
+            ("maxWidth", "800px", "a9cob9"),
+            ("maxWidth", "1200px", "hh3nixn"),
+            // Colors
+            ("color", "white", "nixcd8"),
+            ("color", "black", "ny9fyw"),
+            ("color", "blue", "h7qhtp"),
+            // Border
+            ("borderRadius", "4px", "h3t7lck"),
+            ("borderRadius", "8px", "d8vpdm"),
+            ("borderRadius", "12px", "hhxlwrj"),
+        ];
+
+        println!("\n🔍 Extended Babel-SWC consistency verification ({} test cases):", test_cases.len());
+        println!("{}", "-".repeat(70));
+
+        let mut pass_count = 0;
+        let mut _fail_count = 0;
+
+        for (property, value, expected) in &test_cases {
+            let actual = generate_class_name(property, value, &config);
+            let matches = actual == *expected;
+
+            if matches {
+                pass_count += 1;
+            } else {
+                _fail_count += 1;
+                println!(
+                    "❌ {}: '{}' → {} (expected: {})",
+                    format!("{:15}", property),
+                    format!("{:20}", value),
+                    actual,
+                    expected
+                );
+            }
+
+            assert_eq!(
+                actual, *expected,
+                "SWC generated '{}' but Babel generated '{}' for {}:'{}'",
+                actual, expected, property, value
+            );
+        }
+
+        println!("{}", "-".repeat(70));
+        println!("✅ All {} test cases passed!\n", pass_count);
+    }
+
+    #[test]
+    fn test_no_invalid_class_names_comprehensive() {
+        // Test that NO class names start with digits across many test cases
+        let config = Config {
+            production: true,
+            class_prefix: String::new(),
+        };
+
+        let test_values = vec![
+            ("bg", "red"), ("bg", "blue"), ("bg", "#000"), ("bg", "#fff"),
+            ("p", "0"), ("p", "1"), ("p", "2"), ("p", "4"), ("p", "8"), ("p", "16"),
+            ("m", "0"), ("m", "1"), ("m", "2"), ("m", "4"), ("m", "8"),
+            ("color", "white"), ("color", "black"), ("color", "red"), ("color", "blue"),
+            ("fontSize", "12px"), ("fontSize", "14px"), ("fontSize", "16px"), ("fontSize", "18px"),
+            ("width", "100%"), ("width", "50%"), ("width", "auto"),
+            ("display", "flex"), ("display", "block"), ("display", "none"),
+            ("position", "relative"), ("position", "absolute"), ("position", "fixed"),
+            ("opacity", "0"), ("opacity", "0.5"), ("opacity", "1"),
+            ("zIndex", "1"), ("zIndex", "10"), ("zIndex", "100"),
+        ];
+
+        println!("\n🔍 Testing {} cases for invalid class names:", test_values.len());
+
+        let mut invalid_count = 0;
+
+        for (property, value) in &test_values {
+            let class_name = generate_class_name(property, value, &config);
+            let first_char = class_name.chars().next().unwrap();
+
+            if first_char.is_ascii_digit() {
+                invalid_count += 1;
+                println!("❌ INVALID: {} '{}' → .{} (starts with '{}')",
+                    property, value, class_name, first_char);
+            }
+        }
+
+        println!("✅ Valid: {}/{}", test_values.len() - invalid_count, test_values.len());
+        println!("❌ Invalid: {}/{}\n", invalid_count, test_values.len());
+
+        assert_eq!(invalid_count, 0,
+            "Found {} class names starting with digits!", invalid_count);
+    }
 }

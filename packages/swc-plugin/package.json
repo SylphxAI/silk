@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/swc-plugin-silk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "SWC plugin for Silk - zero-runtime CSS-in-TypeScript",
   "keywords": [
     "swc",
