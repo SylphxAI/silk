@@ -21,14 +21,15 @@ import { withSilk } from '@sylphx/silk-nextjs'
 export default withSilk({
   // Your Next.js config
 }, {
-  // Silk options
+  // Silk options (all optional)
   outputFile: 'silk.css',
+  inject: true,            // Auto-inject CSS (default)
   babelOptions: {
     production: true,
     classPrefix: 'silk',
   },
   compression: {
-    brotli: true,            // Pre-compress CSS (15-25% smaller)
+    brotli: true,          // Pre-compress CSS (15-25% smaller)
     gzip: true,
   }
 })
@@ -56,11 +57,12 @@ export function Button({ children }) {
 }
 ```
 
-### 3. Import CSS in Layout
+### 3. Done! CSS is Automatically Injected
+
+That's it! The CSS is automatically generated at build time and injected into your HTML. No manual CSS imports needed.
 
 ```typescript
-// app/layout.tsx
-import './silk.css'  // CSS is generated at build time
+// app/layout.tsx - No CSS import needed!
 
 export default function RootLayout({ children }) {
   return (
@@ -73,10 +75,17 @@ export default function RootLayout({ children }) {
 
 ## Features
 
+### ✅ Fully Automatic CSS Injection
+- **No manual CSS imports required** - CSS automatically injected into HTML
+- Webpack handles everything at build time
+- Works like Vanilla Extract - zero configuration
+- Clean developer experience
+
 ### ✅ Zero-Runtime Compilation
 - CSS extracted at build time via Babel plugin
 - No runtime CSS-in-JS overhead
 - Static atomic class names
+- HMR support in development
 
 ### ✅ App Router Support
 - Full Next.js 13+ App Router compatibility
@@ -190,66 +199,46 @@ interface SilkNextConfig {
 }
 ```
 
-## Troubleshooting
+## How It Works
 
-### CSS Not Loading
+### Automatic CSS Injection
 
-If you see unstyled components or a warning in the browser console:
+Silk uses a sophisticated webpack integration that automatically handles CSS injection:
 
-**Development Mode:**
-1. Make sure you've imported the CSS file in your layout:
-   ```typescript
-   // app/layout.tsx
-   import './silk.css'  // ✅ Required for HMR
-   ```
+1. **Build Time CSS Generation**
+   - The Babel plugin extracts CSS from your `css()` calls during transformation
+   - CSS rules are collected and deduplicated
+   - A single `silk.css` file is generated
 
-2. Check that the CSS file is being generated:
-   ```bash
-   ls public/silk.css  # or wherever outputFile is configured
-   ```
+2. **Automatic Injection**
+   - A virtual webpack module is created that imports the generated CSS
+   - This module is automatically added to your client bundle entries
+   - Webpack's CSS loaders handle extraction and link tag injection
+   - No manual imports needed!
 
-**Production Mode:**
-- The `inject: true` option (default) will automatically inject CSS
-- The silk-client module tries multiple paths:
-  - `/_next/static/css/silk.css`
-  - `/silk.css`
-  - `/public/silk.css`
+3. **Development vs Production**
+   - Development: CSS is served via webpack-dev-server with HMR support
+   - Production: CSS is extracted to static files with compression
 
-**If the warning persists:**
+### Manual CSS Import (Optional)
+
+If you prefer manual control or need to disable auto-injection:
+
 ```typescript
-// Manually import CSS in your layout
-import './silk.css'
-// or
-import '@sylphx/silk/dist/silk.css'
+// next.config.js
+export default withSilk({}, {
+  inject: false  // Disable auto-injection
+})
 ```
 
-### CSS Injection Not Working
+Then manually import in your layout:
 
-If `inject: true` doesn't work:
+```typescript
+// app/layout.tsx
+import './silk.css'
+```
 
-1. **Check your Next.js config:**
-   ```typescript
-   export default withSilk({
-     // Next.js config
-   }, {
-     inject: true,  // ✅ Default, enables auto-injection
-     outputFile: 'silk.css',
-   })
-   ```
-
-2. **Disable custom webpack config** that might conflict:
-   ```typescript
-   // Remove or check for conflicts
-   webpack(config) {
-     // Custom webpack config
-   }
-   ```
-
-3. **Manual import is always safe:**
-   ```typescript
-   // app/layout.tsx
-   import './silk.css'  // Always works
-   ```
+## Troubleshooting
 
 ### Turbopack Compatibility
 
@@ -265,14 +254,21 @@ Silk uses webpack-based plugin. If using Next.js 16 with Turbopack:
 
 ### Build Errors
 
-**"Cannot find module './silk.css'"**
-- The CSS file is generated during the webpack build
-- In development, run `npm run dev` to generate it
-- For production, run `npm run build`
-
 **"Unexpected token" or SyntaxError**
 - Make sure you're using `'use client'` directive for client components
 - Ensure Babel is configured correctly (Silk handles this automatically)
+
+**Webpack conflicts**
+- If you have custom webpack config, make sure it doesn't conflict with Silk
+- The `withSilk()` wrapper should be the outermost wrapper
+
+### CSS Not Updating
+
+If you change styles but don't see updates:
+
+1. **Restart dev server** - Sometimes HMR needs a full restart
+2. **Clear .next cache** - `rm -rf .next && npm run dev`
+3. **Check browser cache** - Hard refresh (Cmd+Shift+R / Ctrl+Shift+R)
 
 ## Ecosystem
 
