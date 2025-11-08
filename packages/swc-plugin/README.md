@@ -1,12 +1,24 @@
 # @sylphx/swc-plugin-silk
 
+> ⚠️ **DEPRECATED (v0.1.0)**: This version is incomplete and lacks critical fixes.
+>
+> **Use [@sylphx/babel-plugin-silk@2.0.1+](https://www.npmjs.com/package/@sylphx/babel-plugin-silk) instead**, which includes:
+> - ✅ Production mode optimizations (6-7 char class names)
+> - ✅ **CRITICAL FIX**: Invalid CSS class name bug fixed
+> - ✅ Complete CSS collection
+> - ✅ Full Next.js webpack support
+>
+> Full SWC plugin support coming in future release.
+
+---
+
 SWC plugin for Silk - zero-runtime CSS-in-TypeScript compilation.
 
-## Why SWC Plugin?
+## Why SWC Plugin? (Future Goal)
 
-- ✅ **Native Turbopack support** - Works with Next.js 16+ out of the box
-- ✅ **20-70x faster** than Babel plugin
-- ✅ **Perfect Next.js integration** - No webpack mode needed
+- 🔄 **Native Turbopack support** - Works with Next.js 16+ out of the box (In Progress)
+- 🔄 **20-70x faster** than Babel plugin (Partially Complete)
+- 🔄 **Perfect Next.js integration** - No webpack mode needed (In Progress)
 - ✅ **Future-proof** - SWC is the future of JS/TS compilation
 
 ## Architecture: Rust + AssemblyScript Hybrid
@@ -102,39 +114,79 @@ const button = 'silk_bg_red_a7f3 silk_p_4_b2e1'
 
 ## Current Status
 
-✅ **Phase 1 Complete: AST Transformation**
+### v0.1.0 - DEPRECATED ⚠️
 
-The SWC plugin successfully transforms `css()` calls to class name strings:
+**Why Deprecated?**
 
-```typescript
-// Input
-const button = css({ bg: 'red', p: 4 })
+Version 0.1.0 was released prematurely and lacks critical features:
 
-// Output (after SWC transformation)
-const button = 'silk_bg_red_a7f3 silk_p_4_b2e1'
-```
+| Feature | v0.1.0 (SWC) | v2.0.1 (Babel) |
+|---------|--------------|----------------|
+| AST Transformation | ✅ | ✅ |
+| Production Mode | ❌ | ✅ |
+| Short Class Names (6-7 chars) | ❌ | ✅ |
+| **Invalid Class Name Fix** | ❌ | ✅ **CRITICAL** |
+| CSS Collection | ❌ Incomplete | ✅ |
+| Hash Algorithm | Simple hex | MurmurHash2 Base-36 |
+| Turbopack Support | ❌ | N/A (webpack only) |
 
-🚧 **Phase 2 In Progress: CSS Collection**
+**Critical Missing Features:**
 
-CSS rule extraction is currently handled by `@sylphx/unplugin-silk`. For full functionality, use both plugins together:
+1. **❌ No Production Mode**
+   - Only generates long class names (`silk_bg_red_a7f3`)
+   - No 6-7 character optimization
 
+2. **❌ Invalid CSS Class Names (CRITICAL BUG)**
+   - Can generate class names starting with digits (`.0a7f`, `.1b2c`)
+   - These violate CSS identifier spec and are silently dropped by browsers
+   - ~28% of CSS rules may be ignored
+   - **Fixed in @sylphx/babel-plugin-silk@2.0.1**
+
+3. **❌ Inconsistent Hashing**
+   - Uses different hash algorithm than Babel plugin
+   - Same code generates different class names in different modes
+
+4. **❌ Incomplete CSS Collection**
+   - Cannot collect CSS rules independently
+   - Requires additional webpack plugin
+   - Not truly Turbopack-compatible
+
+### Migration Guide
+
+**Instead of:**
 ```javascript
-// next.config.js
-const { silk } = require('@sylphx/nextjs-plugin')
-
-module.exports = silk({
+// ❌ Don't use this (deprecated)
+module.exports = {
   experimental: {
     swcPlugins: [
       ['@sylphx/swc-plugin-silk', { production: true }]
     ]
   }
+}
+```
+
+**Use:**
+```javascript
+// ✅ Use this instead
+const { withSilk } = require('@sylphx/silk-nextjs')
+
+module.exports = withSilk({}, {
+  babelOptions: {
+    production: true,
+    // No classPrefix = optimal 6-7 char class names
+  }
 })
 ```
 
-This hybrid approach ensures:
-- ✅ Fast transformation via SWC (20-70x faster than Babel)
-- ✅ CSS collection via unplugin (until native SWC solution available)
-- ✅ Full Turbopack compatibility in Next.js 16+
+### Future Development
+
+We are working on a complete SWC plugin implementation that will include:
+
+- [ ] Production mode with digit-to-letter mapping (0→g, 1→h, ...)
+- [ ] MurmurHash2 + Base-36 hashing (consistent with Babel plugin)
+- [ ] Native CSS collection via SWC metadata
+- [ ] True Turbopack support
+- [ ] 100% feature parity with Babel plugin
 
 Follow our progress:
 - [GitHub Issues](https://github.com/sylphxltd/silk/issues)
