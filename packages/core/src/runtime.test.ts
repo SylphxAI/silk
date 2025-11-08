@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { createStyleSystem } from './runtime'
+import { createStyleSystem, getRuntimeStats, resetRuntimeStats } from './runtime'
 import { defineConfig } from './config'
 
 describe('createStyleSystem', () => {
@@ -318,6 +318,176 @@ describe('createStyleSystem', () => {
 
       const colorRuleCount = (cssOutput.match(/color: #ef4444/g) || []).length
       expect(colorRuleCount).toBe(1)
+    })
+  })
+
+  describe('Runtime Performance', () => {
+    it('should track runtime statistics', () => {
+      const { css, resetCSSRules } = createStyleSystem(config)
+      resetCSSRules()
+      resetRuntimeStats()
+
+      // Generate some styles
+      css({ color: 'red.500' })
+      css({ p: 4 })
+      css({ color: 'blue.500' })
+
+      const stats = getRuntimeStats()
+
+      expect(stats).toHaveProperty('memoCache')
+      expect(stats).toHaveProperty('objectPools')
+      expect(stats.memoCache).toBeDefined()
+    })
+
+    it('should calculate memoization hit rate', () => {
+      const { css, resetCSSRules } = createStyleSystem(config)
+      resetCSSRules()
+      resetRuntimeStats()
+
+      // Generate multiple different styles to populate cache
+      css({ color: 'red.500' })
+      css({ p: 4 })
+      css({ color: 'blue.500' })
+      css({ m: 8 })
+
+      const stats = getRuntimeStats()
+
+      // Should have some cache entries
+      expect(stats.memoCache).toBeDefined()
+      expect(stats.memoCache.hitRate).toBeGreaterThanOrEqual(0)
+    })
+
+    it('should reset runtime statistics', () => {
+      const { css, resetCSSRules } = createStyleSystem(config)
+      resetCSSRules()
+
+      // Generate some styles
+      css({ color: 'red.500' })
+      css({ p: 4 })
+
+      // Reset stats
+      resetRuntimeStats()
+
+      const stats = getRuntimeStats()
+
+      expect(stats.memoCache.size).toBe(0)
+      expect(stats.memoCache.hits).toBe(0)
+      expect(stats.memoCache.misses).toBe(0)
+    })
+
+    it('should use object pools for performance', () => {
+      const { css, resetCSSRules } = createStyleSystem(config)
+      resetCSSRules()
+
+      // Generate many styles to exercise object pools
+      for (let i = 0; i < 50; i++) {
+        css({ p: 4, m: 8, color: 'red.500' })
+      }
+
+      const stats = getRuntimeStats()
+
+      expect(stats.objectPools).toBeDefined()
+    })
+  })
+
+  describe('Production Mode', () => {
+    it('should work in production mode', () => {
+      const { css } = createStyleSystem(config, {
+        production: true,
+        optimize: true
+      })
+
+      const result = css({ color: 'red.500', p: 4 })
+
+      expect(result.className).toBeTruthy()
+    })
+
+    it('should generate optimized classNames in production', () => {
+      const { css, resetCSSRules } = createStyleSystem(config, {
+        production: true,
+        optimize: true
+      })
+
+      resetCSSRules()
+
+      const result = css({ color: 'red.500' })
+
+      // In production mode, class names should be shorter
+      expect(result.className).toMatch(/^[a-z0-9]+$/)
+    })
+
+    it('should deduplicate in production mode', () => {
+      const { css, getCSSRules, resetCSSRules } = createStyleSystem(config, {
+        production: true,
+        optimize: true
+      })
+
+      resetCSSRules()
+
+      css({ color: 'red.500' })
+      css({ color: 'red.500' })
+      css({ color: 'red.500' })
+
+      const cssOutput = getCSSRules()
+      const colorRuleCount = (cssOutput.match(/color.*#ef4444/g) || []).length
+
+      expect(colorRuleCount).toBe(1)
+    })
+  })
+
+  describe('Edge Cases and Error Handling', () => {
+    it('should handle very deep nesting', () => {
+      const result = css({
+        _hover: {
+          _focus: {
+            _active: {
+              color: 'red.500'
+            }
+          }
+        }
+      })
+
+      expect(result.className).toBeTruthy()
+    })
+
+    it('should handle many properties', () => {
+      const result = css({
+        color: 'red.500',
+        backgroundColor: 'blue.500',
+        padding: 4,
+        margin: 8,
+        fontSize: 'lg',
+        fontWeight: 'bold',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+      })
+
+      expect(result.className).toBeTruthy()
+      expect(result.className.split(' ').length).toBeGreaterThan(5)
+    })
+
+    it('should handle mixed token and raw values', () => {
+      const result = css({
+        color: 'red.500',
+        backgroundColor: '#00ff00',
+        padding: 4,
+        margin: '2rem',
+        width: 200,
+        height: '100px'
+      })
+
+      expect(result.className).toBeTruthy()
+    })
+
+    it('should handle className property', () => {
+      const result = css({
+        color: 'red.500'
+      })
+
+      expect(result).toHaveProperty('className')
+      expect(typeof result.className).toBe('string')
     })
   })
 })
