@@ -13,6 +13,10 @@ build
 .next
 out
 
+# Rust
+target/
+Cargo.lock
+
 # Development
 .DS_Store
 *.log

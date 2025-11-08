@@ -43,8 +43,8 @@
   ],
   "scripts": {
     "build": "bun run build:rust && tsc",
-    "build:rust": "cd swc-plugin && cargo build --release --target wasm32-wasip1 && mkdir -p ../dist && cp target/wasm32-wasip1/release/swc_plugin_silk.wasm ../dist/",
-    "test:rust": "cd swc-plugin && cargo test",
+    "build:rust": "cd ../swc-plugin && cargo build --release --target wasm32-wasip1 && mkdir -p ../nextjs-plugin/dist && cp target/wasm32-wasip1/release/swc_plugin_silk.wasm ../nextjs-plugin/dist/",
+    "test:rust": "cd ../swc-plugin && cargo test",
     "dev": "tsc --watch",
     "prepublishOnly": "bun run build"
   },

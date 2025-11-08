@@ -1,32 +1,3 @@
-use swc_plugin_silk::{Config, SilkTransformVisitor};
-use swc_core::{
-    ecma::{
-        ast::*,
-        visit::{VisitMut, VisitMutWith},
-    },
-};
-
-/// Helper to extract all string literals from transformed code
-fn extract_strings(program: &Program) -> Vec<String> {
-    struct StringCollector {
-        strings: Vec<String>,
-    }
-
-    impl swc_core::ecma::visit::Visit for StringCollector {
-        fn visit_str(&mut self, n: &Str) {
-            self.strings.push(n.value.to_string());
-        }
-    }
-
-    let mut collector = StringCollector {
-        strings: Vec::new(),
-    };
-
-    use swc_core::ecma::visit::Visit;
-    collector.visit_program(program);
-    collector.strings
-}
-
 #[test]
 fn test_basic_transformation() {
     // Test that css() calls are detected and transformed
@@ -35,7 +6,7 @@ fn test_basic_transformation() {
 
 #[test]
 fn test_property_shorthand_expansion() {
-    use swc_plugin_silk::{resolve_css_property, generate_class_name};
+    use swc_plugin_silk::resolve_css_property;
 
     // Test margin shorthands
     assert_eq!(resolve_css_property("m"), "margin");
@@ -106,25 +77,31 @@ fn test_unit_handling() {
 
 #[test]
 fn test_class_name_generation() {
-    use swc_plugin_silk::generate_class_name;
+    use swc_plugin_silk::{generate_class_name, Config};
+
+    let config = Config::default();
 
     // Test basic class name format
-    let class1 = generate_class_name("bg", "red", "silk");
+    let class1 = generate_class_name("bg", "red", &config);
     assert!(class1.starts_with("silk_bg_red_"));
     assert_eq!(class1.split('_').count(), 4); // prefix_prop_value_hash
 
     // Test with different prefix
-    let class2 = generate_class_name("p", "4", "custom");
+    let custom_config = Config {
+        production: false,
+        class_prefix: "custom".to_string(),
+    };
+    let class2 = generate_class_name("p", "4", &custom_config);
     assert!(class2.starts_with("custom_p_4_"));
 
     // Test that same property+value generates same class name
-    let class3a = generate_class_name("color", "blue", "silk");
-    let class3b = generate_class_name("color", "blue", "silk");
+    let class3a = generate_class_name("color", "blue", &config);
+    let class3b = generate_class_name("color", "blue", &config);
     assert_eq!(class3a, class3b);
 
     // Test that different values generate different class names
-    let class4a = generate_class_name("color", "red", "silk");
-    let class4b = generate_class_name("color", "blue", "silk");
+    let class4a = generate_class_name("color", "red", &config);
+    let class4b = generate_class_name("color", "blue", &config);
     assert_ne!(class4a, class4b);
 }
 
@@ -172,19 +149,21 @@ fn test_multiple_properties() {
 
 #[test]
 fn test_special_characters_in_values() {
-    use swc_plugin_silk::generate_class_name;
+    use swc_plugin_silk::{generate_class_name, Config};
+
+    let config = Config::default();
 
     // Test values with special characters
-    let class1 = generate_class_name("color", "rgb(255, 0, 0)", "silk");
+    let class1 = generate_class_name("color", "rgb(255, 0, 0)", &config);
     assert!(class1.starts_with("silk_color_"));
     assert!(!class1.contains('(')); // Should be sanitized
     assert!(!class1.contains(')')); // Should be sanitized
 
-    let class2 = generate_class_name("bg", "#ff0000", "silk");
+    let class2 = generate_class_name("bg", "#ff0000", &config);
     assert!(class2.starts_with("silk_bg_"));
     assert!(!class2.contains('#')); // Should be sanitized
 
-    let class3 = generate_class_name("boxShadow", "0 4px 6px rgba(0, 0, 0, 0.1)", "silk");
+    let class3 = generate_class_name("boxShadow", "0 4px 6px rgba(0, 0, 0, 0.1)", &config);
     assert!(class3.starts_with("silk_boxShadow_"));
     assert!(!class3.contains('(')); // Should be sanitized
     assert!(!class3.contains(')')); // Should be sanitized
@@ -193,28 +172,38 @@ fn test_special_characters_in_values() {
 
 #[test]
 fn test_config_custom_prefix() {
-    use swc_plugin_silk::generate_class_name;
+    use swc_plugin_silk::{generate_class_name, Config};
 
-    let class1 = generate_class_name("bg", "red", "custom");
+    let config1 = Config {
+        production: false,
+        class_prefix: "custom".to_string(),
+    };
+    let class1 = generate_class_name("bg", "red", &config1);
     assert!(class1.starts_with("custom_"));
 
-    let class2 = generate_class_name("bg", "red", "my-app");
+    let config2 = Config {
+        production: false,
+        class_prefix: "my-app".to_string(),
+    };
+    let class2 = generate_class_name("bg", "red", &config2);
     assert!(class2.starts_with("my-app_"));
 }
 
 #[test]
 fn test_hash_consistency() {
-    use swc_plugin_silk::generate_class_name;
+    use swc_plugin_silk::{generate_class_name, Config};
+
+    let config = Config::default();
 
     // Same inputs should generate same hash
-    let class1a = generate_class_name("bg", "red", "silk");
-    let class1b = generate_class_name("bg", "red", "silk");
+    let class1a = generate_class_name("bg", "red", &config);
+    let class1b = generate_class_name("bg", "red", &config);
     assert_eq!(class1a, class1b);
 
     // Different inputs should generate different hashes
-    let class2 = generate_class_name("bg", "blue", "silk");
+    let class2 = generate_class_name("bg", "blue", &config);
     assert_ne!(class1a, class2);
 
-    let class3 = generate_class_name("color", "red", "silk");
+    let class3 = generate_class_name("color", "red", &config);
     assert_ne!(class1a, class3);
 }
