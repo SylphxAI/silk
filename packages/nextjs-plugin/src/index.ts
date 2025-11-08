@@ -93,31 +93,44 @@ export function withSilk(
     },
   }
 
-  // Detect Turbopack mode
-  const useTurbopack = nextConfig.turbo !== undefined || process.env.TURBOPACK === '1'
-
   // Path to the bundled WASM file (shipped with this package)
   const wasmPath = path.join(__dirname, 'swc_plugin_silk.wasm')
 
-  // SWC plugin configuration for Turbopack
-  // Uses the WASM file bundled with this package (no separate install needed)
-  const swcPluginConfig = useTurbopack ? {
+  // SWC plugin configuration for Turbopack (only enabled when turbopack config exists)
+  const hasTurbopackConfig = nextConfig.turbopack !== undefined || nextConfig.turbo !== undefined
+  const swcPluginConfig = hasTurbopackConfig ? {
     experimental: {
       ...nextConfig.experimental,
       swcPlugins: [
         [wasmPath, babelOptions as Record<string, unknown>] as [string, Record<string, unknown>],
         ...(nextConfig.experimental?.swcPlugins || []),
       ],
-      // Turbopack configuration
-      turbo: {
-        ...nextConfig.turbo,
-      },
     },
   } : {}
+
+  // Ensure .next directory and placeholder CSS exist
+  const ensureCSSPlaceholder = (dir: string) => {
+    const cssPath = path.join(dir, '.next', outputFile)
+    const cssDir = path.dirname(cssPath)
+
+    if (!fs.existsSync(cssDir)) {
+      fs.mkdirSync(cssDir, { recursive: true })
+    }
+
+    if (!fs.existsSync(cssPath)) {
+      fs.writeFileSync(cssPath, '/* Silk CSS - will be generated during build */')
+    }
+  }
 
   return {
     ...nextConfig,
     ...swcPluginConfig,
+
+    // Turbopack configuration (Next.js 16+)
+    turbopack: {
+      ...nextConfig.turbopack,
+    },
+
     webpack(config, options) {
       const { isServer, dev, dir } = options
 
@@ -126,25 +139,15 @@ export function withSilk(
         config = nextConfig.webpack(config, options)
       }
 
-      const cssPath = path.join(dir, '.next', outputFile)
-      const cssDir = path.dirname(cssPath)
+      // Ensure placeholder exists for CSS imports
+      ensureCSSPlaceholder(dir)
 
-      // Create placeholder CSS file before compilation starts
-      // This ensures .next/silk.css exists when Next.js processes CSS imports
+      // Create placeholder hook for Webpack builds
       config.plugins = config.plugins || []
       config.plugins.push({
         apply(compiler: any) {
           compiler.hooks.beforeCompile.tapAsync('SilkPlaceholder', (_params: any, callback: () => void) => {
-            if (!fs.existsSync(cssDir)) {
-              fs.mkdirSync(cssDir, { recursive: true })
-            }
-
-            // Create empty placeholder if doesn't exist
-            // Silk plugin will overwrite this with real CSS during compilation
-            if (!fs.existsSync(cssPath)) {
-              fs.writeFileSync(cssPath, '/* Silk CSS - will be generated during build */')
-            }
-
+            ensureCSSPlaceholder(dir)
             callback()
           })
         }

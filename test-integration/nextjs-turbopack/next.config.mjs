@@ -1,7 +1,9 @@
 import { withSilk } from '@sylphx/silk-nextjs'
 
 export default withSilk({
-  // Next.js config - Turbopack enabled via --turbo flag
+  // Next.js config
+  // Note: Use --webpack flag for production builds
+  // Dev mode can use --turbo flag
 }, {
   // Silk config
   outputFile: 'silk.css',

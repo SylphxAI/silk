@@ -5,16 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "next build",
+    "build": "next build --webpack",
+    "build:turbo": "next build",
     "start": "next start"
   },
   "dependencies": {
     "@sylphx/silk": "file:../../packages/core",
     "@sylphx/silk-nextjs": "file:../../packages/nextjs-plugin",
     "@sylphx/silk-react": "^2.0.2",
-    "next": "^14.2.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "next": "^16.0.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
