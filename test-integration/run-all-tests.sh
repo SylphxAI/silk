@@ -17,9 +17,18 @@ NC='\033[0m' # No Color
 
 FAILED=0
 
+# Rebuild packages first (required for file: dependencies)
+echo -e "${YELLOW}🔨 Building packages...${NC}"
+cd ../packages/core
+bun run build > /dev/null 2>&1
+cd ../nextjs-plugin
+bun run build > /dev/null 2>&1
+echo -e "${GREEN}✅ Packages built${NC}"
+echo ""
+
 # Test 1: Unit tests
 echo -e "${YELLOW}📦 Test 1: Unit Tests${NC}"
-cd ../packages/core
+cd ../../packages/core
 if bun run test; then
   echo -e "${GREEN}✅ Unit tests passed${NC}"
 else
@@ -30,9 +39,9 @@ echo ""
 
 # Test 2: Webpack build
 echo -e "${YELLOW}📦 Test 2: Next.js Webpack Build${NC}"
-cd ../test-integration/nextjs-webpack
+cd ../../test-integration/nextjs-webpack
 rm -rf .next node_modules
-npm install --silent
+npm install --silent --legacy-peer-deps
 if npm run build > /dev/null 2>&1; then
   if [ -f ".next/static/css/silk.css" ]; then
     CSS_SIZE=$(wc -c < .next/static/css/silk.css | tr -d ' ')
@@ -51,7 +60,7 @@ echo ""
 echo -e "${YELLOW}📦 Test 3: Next.js Turbopack Dev Mode${NC}"
 cd ../nextjs-turbopack
 rm -rf .next node_modules
-npm install --silent
+npm install --silent --legacy-peer-deps
 # Start server in background
 npm run dev > /tmp/turbopack-test.log 2>&1 &
 DEV_PID=$!
