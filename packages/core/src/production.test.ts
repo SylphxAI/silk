@@ -143,7 +143,8 @@ describe('production optimizations', () => {
 
       const className = generateClassName('color-red', config)
 
-      expect(className).toMatch(/^z-/)
+      // Production mode with shortClassNames: false uses z{hash} format (no separator)
+      expect(className).toMatch(/^z[a-z0-9]+$/)
       expect(className).not.toBe('a0')
     })
   })
