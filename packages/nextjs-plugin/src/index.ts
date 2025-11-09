@@ -110,23 +110,33 @@ export function withSilk(
   return {
     ...nextConfig,
 
-    // Add SWC plugin for Turbopack mode
-    experimental: {
-      ...(nextConfig.experimental || {}),
-      ...(enableTurbopack && wasmExists ? {
-        swcPlugins: [
-          ...(nextConfig.experimental?.swcPlugins || []),
-          [swcPluginPath, {}]
-        ]
-      } : {})
-    },
+    // Turbopack mode: Use babel-loader for css() transformation
+    ...(enableTurbopack ? {
+      turbopack: {
+        ...(nextConfig.turbopack || {}),
+        rules: {
+          ...(nextConfig.turbopack?.rules || {}),
+          '*.{js,jsx,ts,tsx}': {
+            loaders: [
+              {
+                loader: 'babel-loader',
+                options: {
+                  presets: ['next/babel'],
+                  plugins: ['@sylphx/babel-plugin-silk']
+                }
+              }
+            ],
+            as: '*.js'
+          }
+        }
+      }
+    } : {}),
 
     webpack(config: any, options: any) {
       // If user explicitly enabled turbopack mode, skip webpack plugin
       if (enableTurbopack === true) {
         if (debug) {
-          console.log('[Silk] Turbopack mode: SWC plugin enabled for css() transformation');
-          console.log('[Silk] SWC plugin path:', swcPluginPath);
+          console.log('[Silk] Turbopack mode: Using babel-loader for css() transformation');
         }
         // Call user's webpack config if exists
         if (typeof nextConfig.webpack === 'function') {

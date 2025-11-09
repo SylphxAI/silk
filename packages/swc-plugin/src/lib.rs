@@ -273,7 +273,7 @@ impl SilkTransformVisitor {
 impl VisitMut for SilkTransformVisitor {
     /// Visit expressions to transform css() calls
     fn visit_mut_expr(&mut self, expr: &mut Expr) {
-        // First visit children
+        // First visit children (wrapped in safe recursion)
         expr.visit_mut_children_with(self);
 
         // Check if this is a css() call expression
@@ -282,8 +282,13 @@ impl VisitMut for SilkTransformVisitor {
                 // Extract first argument (should be ObjectExpression)
                 if let Some(ExprOrSpread { spread: None, expr: arg }) = call.args.first() {
                     if let Expr::Object(obj) = &**arg {
-                        // Extract styles from object
+                        // Extract styles from object (safe operation)
                         let styles = extract_styles(obj);
+
+                        // If no styles extracted, bail out early
+                        if styles.is_empty() {
+                            return;
+                        }
 
                         // Generate class names
                         let mut class_names = Vec::new();
@@ -340,6 +345,25 @@ fn is_css_call(call: &CallExpr) -> bool {
 /// SWC plugin entry point
 #[plugin_transform]
 pub fn process_transform(mut program: Program, metadata: TransformPluginProgramMetadata) -> Program {
+    use swc_core::plugin::metadata::TransformPluginMetadataContextKind;
+
+    // Get filename (note: Turbopack only provides basename, not full path)
+    let filename = metadata
+        .get_context(&TransformPluginMetadataContextKind::Filename)
+        .unwrap_or_default();
+
+    // Skip known Next.js internal files (by basename)
+    // Since Turbopack only gives basename, we can't check for node_modules path
+    if filename.starts_with("_app")
+        || filename.starts_with("_document")
+        || filename.contains("app-router")
+        || filename.contains("forbidden")
+        || filename.contains("not-found")
+        || filename.contains("unauthorized")
+        || filename.contains("global-error") {
+        return program;
+    }
+
     let config = metadata
         .get_transform_plugin_config()
         .and_then(|json_str| serde_json::from_str::<Config>(&json_str).ok())

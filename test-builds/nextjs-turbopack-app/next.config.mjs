@@ -1,11 +1,12 @@
+import { withSilk } from '@sylphx/silk-nextjs'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Turbopack mode (no plugin support yet)
-  experimental: {
-    turbo: {
-      rules: {},
-    }
-  }
+  reactStrictMode: true,
 };
 
-export default nextConfig;
+export default withSilk(nextConfig, {
+  turbopack: true,  // Enable Turbopack mode with SWC plugin
+  srcDir: './src',
+  debug: true
+});

@@ -3,23 +3,26 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "predev": "silk generate",
-    "prebuild": "silk generate",
+    "predev": "silk generate --src ./src -o ./src/silk.generated.css",
+    "prebuild": "silk generate --src ./src -o ./src/silk.generated.css",
     "build": "next build",
     "dev": "next dev --turbo",
     "start": "next start"
   },
   "dependencies": {
     "@sylphx/silk": "file:../../packages/core",
+    "@sylphx/silk-nextjs": "file:../../packages/nextjs-plugin",
     "next": "^15.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@sylphx/silk-cli": "file:../../packages/cli",
+    "@sylphx/babel-plugin-silk": "file:../../packages/babel-plugin-silk",
     "@types/node": "^20.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
+    "babel-loader": "^9.0.0",
     "typescript": "^5.6.3"
   }
 }
