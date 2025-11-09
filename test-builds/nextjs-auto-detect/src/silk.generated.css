@@ -1,0 +1,35 @@
+@layer reset, base, tokens, recipes;
+
+@layer utilities {
+  .a0 {
+    display: flex;
+  }
+
+  .a1 {
+    flex-direction: column;
+  }
+
+  .a2 {
+    align-items: center;
+  }
+
+  .a3 {
+    padding: 2rem;
+  }
+
+  .a4 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .a5 {
+    font-size: 2.5rem;
+  }
+
+  .a6 {
+    font-weight: bold;
+  }
+
+  .a7 {
+    color: #fff;
+  }
+}
