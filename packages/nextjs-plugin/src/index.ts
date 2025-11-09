@@ -96,19 +96,15 @@ export function withSilk(
     ...generateOptions
   } = silkConfig;
 
-  // Strategy: Always provide webpack function
-  // - If webpack() is called by Next.js → Use webpack mode (virtual module)
-  // - If webpack() is NOT called → User is using Turbopack (expects generated CSS)
-  //
-  // This way, it automatically adapts to whatever Next.js is actually using:
-  // - `next dev` → calls webpack() → webpack mode works
-  // - `next dev --turbo` → doesn't call webpack() → turbopack mode (needs CLI)
+  // Strategy: Always provide webpack function for css() transformation
+  // Next.js 16 defaults to Turbopack, but Silk requires webpack for css() transformation
+  // Users should explicitly use `--webpack` flag or set turbopack: false
 
   return {
     ...nextConfig,
 
     webpack(config: any, options: any) {
-      // If user explicitly disabled turbopack mode, skip auto-detection
+      // If user explicitly enabled turbopack mode, skip webpack plugin
       if (enableTurbopack === true) {
         if (debug) {
           console.log('[Silk] Turbopack mode explicitly enabled, skipping webpack plugin');

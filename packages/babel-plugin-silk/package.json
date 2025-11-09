@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/babel-plugin-silk",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "Babel plugin for zero-runtime Silk CSS-in-TypeScript compilation",
   "keywords": [
     "babel-plugin",
@@ -12,11 +12,11 @@
   ],
   "author": "SylphX Ltd",
   "license": "MIT",
-  "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "require": "./dist/index.js",
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     }

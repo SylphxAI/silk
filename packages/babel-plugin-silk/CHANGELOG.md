@@ -1,5 +1,11 @@
 # @sylphx/babel-plugin-silk
 
+## 2.0.3
+
+### Patch Changes
+
+- Fix package.json exports for Babel compatibility - add require field and remove type: module
+
 ## 2.0.1
 
 ### Patch Changes
