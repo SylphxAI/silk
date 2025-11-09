@@ -96,18 +96,37 @@ export function withSilk(
     ...generateOptions
   } = silkConfig;
 
-  // Strategy: Always provide webpack function for css() transformation
-  // Next.js 16 defaults to Turbopack, but Silk requires webpack for css() transformation
-  // Users should explicitly use `--webpack` flag or set turbopack: false
+  // Path to bundled SWC plugin WASM
+  const swcPluginPath = path.join(__dirname, 'swc_plugin_silk.wasm');
+
+  // Check if WASM file exists
+  const wasmExists = fs.existsSync(swcPluginPath);
+
+  if (enableTurbopack && !wasmExists) {
+    console.warn('[Silk] Warning: SWC plugin WASM not found at', swcPluginPath);
+    console.warn('[Silk] Turbopack mode requires the bundled SWC plugin for css() transformation');
+  }
 
   return {
     ...nextConfig,
+
+    // Add SWC plugin for Turbopack mode
+    experimental: {
+      ...(nextConfig.experimental || {}),
+      ...(enableTurbopack && wasmExists ? {
+        swcPlugins: [
+          ...(nextConfig.experimental?.swcPlugins || []),
+          [swcPluginPath, {}]
+        ]
+      } : {})
+    },
 
     webpack(config: any, options: any) {
       // If user explicitly enabled turbopack mode, skip webpack plugin
       if (enableTurbopack === true) {
         if (debug) {
-          console.log('[Silk] Turbopack mode explicitly enabled, skipping webpack plugin');
+          console.log('[Silk] Turbopack mode: SWC plugin enabled for css() transformation');
+          console.log('[Silk] SWC plugin path:', swcPluginPath);
         }
         // Call user's webpack config if exists
         if (typeof nextConfig.webpack === 'function') {

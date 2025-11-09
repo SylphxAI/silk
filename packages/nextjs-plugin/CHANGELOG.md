@@ -1,5 +1,16 @@
 # @sylphx/silk-nextjs
 
+## 3.2.0
+
+### Minor Changes
+
+- feat(nextjs): add SWC plugin support for Turbopack mode
+
+  - Add `experimental.swcPlugins` config when `turbopack: true`
+  - Enable css() transformation in Turbopack mode (Next.js 16+)
+  - Bundle SWC plugin WASM with package for automatic transformation
+  - Users can now use `next dev --turbo` with Silk
+
 ## 3.1.0
 
 ### Minor Changes

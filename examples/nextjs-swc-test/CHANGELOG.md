@@ -1,5 +1,12 @@
 # nextjs-swc-test
 
+## 0.1.9
+
+### Patch Changes
+
+- Updated dependencies
+  - @sylphx/silk-nextjs@3.2.0
+
 ## 0.1.8
 
 ### Patch Changes
