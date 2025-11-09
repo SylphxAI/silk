@@ -26,52 +26,32 @@ export default withSilk({
 })
 ```
 
-That's it for Webpack mode! For Turbopack mode, see the section below.
+### 2. Babel Configuration (Required)
 
-::: tip Turbopack vs Webpack
-Silk supports both build modes with different approaches:
-- **Webpack mode** (zero-codegen): Virtual CSS modules, automatic regeneration
-- **Turbopack mode** (CLI-based): Requires `@sylphx/silk-cli` and `silk generate` command
-
-Both modes provide zero runtime overhead.
-:::
-
-### Turbopack Mode Setup
-
-If using Turbopack (`next dev --turbo`), you need the CLI tool:
-
-```bash
-bun add -D @sylphx/silk-cli
-```
-
-Add generation scripts:
+Create a `.babelrc` file in your project root:
 
 ```json
-// package.json
+// .babelrc
 {
-  "scripts": {
-    "predev": "silk generate --src ./app",
-    "prebuild": "silk generate --src ./app",
-    "dev": "next dev --turbo",
-    "build": "next build --turbo"
-  }
+  "presets": ["next/babel"],
+  "plugins": ["@sylphx/babel-plugin-silk"]
 }
 ```
 
-Import the generated CSS:
+That's it! Silk works with both Webpack and Turbopack with the same setup.
 
-```tsx
-// app/layout.tsx
-import './silk.generated.css'  // CLI-generated file
+::: tip Turbopack Support (Next.js 16+)
+Silk v3.3.1+ works seamlessly with Turbopack! Just add the `.babelrc` file above.
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
-}
-```
+**Key differences from v3.3.0:**
+- ❌ No `silk generate` or CLI needed
+- ❌ No `silk.generated.css` import needed
+- ✅ Just `.babelrc` + babel-plugin-silk
+- ✅ Next.js 16 automatically uses Babel when `.babelrc` exists
+- ✅ Works exactly like Webpack mode
+
+Both Webpack and Turbopack provide zero runtime overhead with the same developer experience.
+:::
 
 ## App Router (Recommended)
 
@@ -348,15 +328,10 @@ const grid = css({
 
 This error means the transformation isn't happening. Check:
 
-**Webpack mode:**
 1. ✅ `@sylphx/babel-plugin-silk` is installed
-2. ✅ `withSilk()` is wrapping your Next.js config
-3. ✅ Restart dev server after config changes
-
-**Turbopack mode:**
-1. ✅ `@sylphx/silk-cli` is installed
-2. ✅ `predev` and `prebuild` scripts run `silk generate`
-3. ✅ Importing `./silk.generated.css` in layout
+2. ✅ `.babelrc` file exists in project root with babel-plugin-silk configured
+3. ✅ `withSilk()` is wrapping your Next.js config
+4. ✅ Restart dev server after config changes
 
 ### Styles not updating in dev
 

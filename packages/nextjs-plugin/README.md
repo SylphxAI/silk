@@ -5,7 +5,7 @@ Next.js integration for Silk - zero-runtime CSS-in-TypeScript with App Router su
 ## Installation
 
 ```bash
-npm install @sylphx/silk @sylphx/silk-nextjs
+npm install @sylphx/silk @sylphx/silk-nextjs @sylphx/babel-plugin-silk
 ```
 
 ## Quick Start
@@ -19,23 +19,20 @@ import { withSilk } from '@sylphx/silk-nextjs';
 export default withSilk({
   // Your Next.js config
 });
-// Auto-detects Turbopack mode (recommended)
 ```
 
-### 2. Import Silk CSS in your root layout
+### 2. Add Babel Configuration
 
-```typescript
-// app/layout.tsx (or src/app/layout.tsx)
-import 'silk.css';  // Virtual CSS module
+Create a `.babelrc` file in your project root:
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
+```json
+{
+  "presets": ["next/babel"],
+  "plugins": ["@sylphx/babel-plugin-silk"]
 }
 ```
+
+**That's it!** Works with both Webpack and Turbopack (Next.js 16+).
 
 ### 3. Use Silk in your components
 
@@ -111,78 +108,27 @@ my-app/
 └── next.config.mjs  ← srcDir: './src' (or omit)
 ```
 
-## Build Modes
+## Turbopack Support (Next.js 16+)
 
-Silk supports both Webpack and Turbopack with different approaches:
-
-### Webpack Mode (Recommended for Dev)
-
-**Zero-codegen** approach with virtual CSS modules:
-
-```javascript
-// next.config.mjs
-import { withSilk } from '@sylphx/silk-nextjs';
-
-export default withSilk({
-  // Your Next.js config
-});
-```
-
-```typescript
-// app/layout.tsx
-import 'silk.css';  // ✅ Virtual CSS module (auto-generated)
-```
+Silk v3.3.1+ works seamlessly with Turbopack! No additional setup needed beyond the `.babelrc` file.
 
 ```bash
-next dev          # Webpack mode
-next build        # Production build
+next dev --turbo    # Turbopack mode (10x faster)
+next build --turbo  # Production build with Turbopack
 ```
 
-**Pros:**
-- ✅ Zero-codegen (no CLI needed)
-- ✅ Automatic CSS regeneration on file changes
-- ✅ Zero setup
+**How it works:**
+- Next.js 16 automatically uses Babel when `.babelrc` exists
+- `@sylphx/babel-plugin-silk` transforms `css()` calls at build time
+- No CLI or `silk generate` needed
+- Zero runtime overhead, same as Webpack mode
 
-### Turbopack Mode (Faster Builds)
-
-**CLI-based** approach with generated CSS file:
-
-```bash
-bun add -D @sylphx/silk-cli
-```
-
-```json
-// package.json
-{
-  "scripts": {
-    "predev": "silk generate --src ./app",
-    "prebuild": "silk generate --src ./app",
-    "dev": "next dev --turbo",
-    "build": "next build --turbo"
-  }
-}
-```
-
-```javascript
-// next.config.mjs
-import { withSilk } from '@sylphx/silk-nextjs';
-
-export default withSilk({}, {
-  turbopack: true  // Enable Turbopack mode
-});
-```
-
-```typescript
-// app/layout.tsx
-import './silk.generated.css';  // ✅ CLI-generated file
-```
-
-**Pros:**
-- ✅ **10x faster builds** (Turbopack vs Webpack)
-- ✅ Future of Next.js (Vercel's focus)
-- ✅ Works with Next.js 15+
-
-**Note:** Requires `@sylphx/silk-cli` and package.json scripts for CSS generation
+**v3.3.0 → v3.3.1 Migration:**
+If you're upgrading from v3.3.0, you can now remove:
+- ❌ `@sylphx/silk-cli` dependency
+- ❌ `predev`/`prebuild` scripts running `silk generate`
+- ❌ `silk.generated.css` import
+- ✅ Just keep `.babelrc` + `@sylphx/babel-plugin-silk`
 
 ## Compatibility
 
