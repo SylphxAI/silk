@@ -4,7 +4,7 @@
  */
 
 import { component$, useSignal, useTask$, type QwikIntrinsicElements, type Component } from '@builder.io/qwik'
-import { createStyleSystem, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
+import { createStyleSystem, STYLE_PROP_NAMES, type StylePropName, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
 
 export interface SilkQwikSystem<C extends DesignConfig> {
   /**
@@ -57,25 +57,8 @@ export function createSilkQwik<const C extends DesignConfig>(
 ): SilkQwikSystem<C> {
   const styleSystem = createStyleSystem<C>(config)
 
-  // Style prop names for extraction
-  const stylePropNames = [
-    'color', 'bg', 'backgroundColor', 'borderColor',
-    'm', 'margin', 'mt', 'marginTop', 'mr', 'marginRight',
-    'mb', 'marginBottom', 'ml', 'marginLeft',
-    'p', 'padding', 'pt', 'paddingTop', 'pr', 'paddingRight',
-    'pb', 'paddingBottom', 'pl', 'paddingLeft',
-    'gap', 'w', 'width', 'h', 'height',
-    'minW', 'minWidth', 'minH', 'minHeight',
-    'maxW', 'maxWidth', 'maxH', 'maxHeight',
-    'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign',
-    'display', 'flexDirection', 'justifyContent', 'alignItems',
-    'gridTemplateColumns', 'gridTemplateRows', 'gridColumn', 'gridRow',
-    'rounded', 'borderRadius', 'borderWidth',
-    'opacity', 'shadow', 'boxShadow',
-    '_hover', '_focus', '_active', '_disabled',
-    'containerType', 'containerName', '@container', '@scope', '@starting-style',
-    'viewTransitionName', 'contain'
-  ] as const
+  // Use shared style prop names from core
+  const stylePropNames = STYLE_PROP_NAMES
 
   /**
    * Create a styled Qwik component
@@ -87,16 +70,16 @@ export function createSilkQwik<const C extends DesignConfig>(
     element: E,
     baseStyles?: TypedStyleProps<C>
   ): Component<QwikIntrinsicElements[E] & TypedStyleProps<C>> {
-    return component$((props: any) => {
+    return component$((props: QwikIntrinsicElements[E] & TypedStyleProps<C>) => {
       // Extract style props from component props
-      const styleProps: Record<string, any> = {}
-      const elementProps: Record<string, any> = {}
+      const styleProps: Partial<TypedStyleProps<C>> = {}
+      const elementProps: Partial<QwikIntrinsicElements[E]> = {}
 
       for (const key in props) {
-        if (stylePropNames.includes(key as any)) {
-          styleProps[key] = props[key]
+        if (stylePropNames.includes(key as StylePropName)) {
+          (styleProps as any)[key] = props[key]
         } else {
-          elementProps[key] = props[key]
+          (elementProps as any)[key] = props[key]
         }
       }
 

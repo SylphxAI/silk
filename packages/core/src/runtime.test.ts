@@ -34,7 +34,9 @@ describe('createStyleSystem', () => {
       const result = css({ color: 'red.500' })
 
       expect(result.className).toBeTruthy()
-      expect(result.className).toMatch(/^silk-[a-z0-9]+$/)
+      // Development mode: descriptive format silk_property_value_hash
+      expect(result.className).toMatch(/^silk_/)
+      expect(result.className).toContain('color')
     })
 
     it('should resolve color tokens correctly', () => {
@@ -147,7 +149,8 @@ describe('createStyleSystem', () => {
       const result = cx('custom-class', { color: 'red.500' })
 
       expect(result.className).toContain('custom-class')
-      expect(result.className).toMatch(/silk-[a-z0-9]+/)
+      // Development mode: descriptive format
+      expect(result.className).toMatch(/silk_/)
     })
 
     it('should filter out falsy values', () => {

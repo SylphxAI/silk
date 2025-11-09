@@ -12,7 +12,7 @@ import type {
   RefAttributes,
 } from 'react'
 import type { DesignConfig, TypedStyleProps, StyleSystem } from '@sylphx/silk'
-import { createStyleSystem } from '@sylphx/silk'
+import { createStyleSystem, isStyleProp } from '@sylphx/silk'
 
 // HTML elements that can be styled
 type StylableElements = keyof JSX.IntrinsicElements
@@ -29,9 +29,9 @@ type StyledComponentProps<
 // Styled component type - use a function component with explicit prop types
 interface StyledComponent<Element extends ElementType, Config extends DesignConfig>
   extends React.ForwardRefExoticComponent<
-    StyledComponentProps<Element, Config> & React.RefAttributes<any>
+    StyledComponentProps<Element, Config> & React.RefAttributes<Element>
   > {
-  (props: StyledComponentProps<Element, Config> & React.RefAttributes<any>): React.ReactElement | null
+  (props: StyledComponentProps<Element, Config> & React.RefAttributes<Element>): React.ReactElement | null
 }
 
 /**
@@ -43,76 +43,18 @@ export function createReactStyleSystem<C extends DesignConfig>(styleSystem: Styl
   /**
    * Extract style props from component props
    */
-  function extractStyleProps(props: Record<string, any>): {
-    styleProps: TypedStyleProps<C>
-    elementProps: Record<string, any>
+  function extractStyleProps<T extends Record<string, unknown>>(props: T): {
+    styleProps: Partial<TypedStyleProps<C>>
+    elementProps: Partial<Omit<T, keyof TypedStyleProps<C>>>
   } {
-    const styleProps: Record<string, any> = {}
-    const elementProps: Record<string, any> = {}
-
-    // Known style prop keys (could be auto-generated from TypedStyleProps)
-    const stylePropKeys = new Set([
-      'color',
-      'bg',
-      'backgroundColor',
-      'borderColor',
-      'm',
-      'margin',
-      'mt',
-      'marginTop',
-      'mr',
-      'marginRight',
-      'mb',
-      'marginBottom',
-      'ml',
-      'marginLeft',
-      'p',
-      'padding',
-      'pt',
-      'paddingTop',
-      'pr',
-      'paddingRight',
-      'pb',
-      'paddingBottom',
-      'pl',
-      'paddingLeft',
-      'gap',
-      'w',
-      'width',
-      'h',
-      'height',
-      'minW',
-      'minWidth',
-      'maxW',
-      'maxWidth',
-      'minH',
-      'minHeight',
-      'maxH',
-      'maxHeight',
-      'fontSize',
-      'fontWeight',
-      'lineHeight',
-      'letterSpacing',
-      'textAlign',
-      'borderRadius',
-      'rounded',
-      'opacity',
-      'boxShadow',
-      'shadow',
-      'display',
-      'flexDirection',
-      'justifyContent',
-      'alignItems',
-      '_hover',
-      '_focus',
-      '_active',
-    ])
+    const styleProps: Partial<TypedStyleProps<C>> = {}
+    const elementProps: Partial<Omit<T, keyof TypedStyleProps<C>>> = {}
 
     for (const [key, value] of Object.entries(props)) {
-      if (stylePropKeys.has(key) || key.startsWith('_')) {
-        styleProps[key] = value
+      if (isStyleProp(key)) {
+        (styleProps as any)[key] = value
       } else {
-        elementProps[key] = value
+        (elementProps as any)[key] = value
       }
     }
 
@@ -126,7 +68,7 @@ export function createReactStyleSystem<C extends DesignConfig>(styleSystem: Styl
     element: Element,
     baseStyles?: TypedStyleProps<C>
   ): StyledComponent<Element, C> {
-    const StyledComponent = forwardRef<any, StyledComponentProps<Element, C>>((props, ref) => {
+    const StyledComponent = forwardRef<Element, StyledComponentProps<Element, C>>((props, ref) => {
       const { as, className: externalClassName, ...rest } = props
       const { styleProps, elementProps } = extractStyleProps(rest)
 

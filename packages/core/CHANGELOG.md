@@ -1,5 +1,54 @@
 # @sylphx/silk
 
+## 2.2.1
+
+### Patch Changes
+
+- ## Fixes
+
+  - Clarified Silk's Zero Codegen strategy in documentation
+  - Fixed Turbopack support documentation - CLI codegen is required for Turbopack mode
+  - Updated Next.js plugin README with accurate Webpack vs Turbopack setup instructions
+  - Removed NODE_ENV auto-detection from runtime to maintain Zero Codegen principle
+  - Added comprehensive framework testing and documentation review
+
+  ## Documentation
+
+  - Updated main README.md with accurate framework support matrix
+  - Enhanced FRAMEWORK_QUICKSTART.md with detailed Next.js Webpack/Turbopack comparison
+  - Clarified that Webpack mode supports true zero-codegen while Turbopack requires CLI
+  - Added feature comparison tables for Next.js build modes
+  - Fixed inconsistent documentation across all framework guides
+
+## 2.2.0
+
+### Minor Changes
+
+- feat(runtime): auto-detect NODE_ENV for production class names
+
+  Runtime `css()` function now automatically detects `process.env.NODE_ENV === 'production'` and generates short hash-based class names (`s{hash}`) instead of development format (`silk_property_value_hash`).
+
+  This enables production optimizations for:
+
+  - Next.js 16 Turbopack (without Babel plugin support)
+  - Webpack plugin mode
+  - Any runtime-based usage
+
+  Breaking change: Default `shortClassNames` changed from `true` to `false` to match CLI and Babel plugin behavior (hash-based instead of counter-based).
+
+- fix(security): replace eval() with AST parser in scan.ts
+
+  **SECURITY FIX**: Eliminated eval()-based CSS extraction which posed arbitrary code execution vulnerability.
+
+  Now uses @babel/parser and @babel/traverse for safe AST-based parsing:
+
+  - Handles TypeScript type assertions (`as any`, `as const`, `satisfies`)
+  - Supports Vue/Svelte single-file components
+  - Static analysis only - skips dynamic expressions
+  - Production-quality error recovery
+
+  Added dependencies: @babel/parser, @babel/traverse, @babel/types
+
 ## 2.1.1
 
 ### Patch Changes

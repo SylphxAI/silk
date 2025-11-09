@@ -139,7 +139,7 @@ describe('SWC Plugin Transformation', () => {
       // All numeric values should be transformed
       expect(output).toContain('silk_p_4_')
       expect(output).toContain('silk_width_200_')
-      expect(output).toContain('silk_opacity_0.5_')
+      expect(output).toContain('silk_opacity_0_5_')
       expect(output).toContain('silk_zIndex_10_')
     })
 

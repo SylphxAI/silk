@@ -10,7 +10,9 @@
     "start": "next start"
   },
   "dependencies": {
+    "@sylphx/babel-plugin-silk": "^2.0.4",
     "@sylphx/silk": "file:../../packages/core",
+    "@sylphx/silk-cli": "^1.0.3",
     "@sylphx/silk-nextjs": "file:../../packages/nextjs-plugin",
     "next": "^16.0.1",
     "react": "^19.2.0",

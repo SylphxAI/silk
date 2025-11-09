@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/babel-plugin-silk",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Babel plugin for zero-runtime Silk CSS-in-TypeScript compilation",
   "keywords": [
     "babel-plugin",
@@ -34,7 +34,8 @@
   },
   "dependencies": {
     "@babel/core": "^7.23.0",
-    "@babel/types": "^7.23.0"
+    "@babel/types": "^7.23.0",
+    "@sylphx/silk": "^2.2.1"
   },
   "devDependencies": {
     "@babel/preset-typescript": "^7.23.0",

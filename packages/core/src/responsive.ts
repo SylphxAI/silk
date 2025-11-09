@@ -30,18 +30,18 @@ export function generateMediaQuery(breakpoint: string, minMax: 'min' | 'max' = '
  * Process responsive styles
  */
 export function processResponsiveStyles<C extends DesignConfig>(
-  styles: Record<string, any>,
+  styles: TypedStyleProps<C>,
   breakpoints: Record<string, string> | undefined
 ): {
-  base: Record<string, any>
-  responsive: Record<string, Record<string, any>>
+  base: TypedStyleProps<C>
+  responsive: Record<string, TypedStyleProps<C>>
 } {
   if (!breakpoints) {
     return { base: styles, responsive: {} }
   }
 
-  const base: Record<string, any> = {}
-  const responsive: Record<string, Record<string, any>> = {}
+  const base: TypedStyleProps<C> = {}
+  const responsive: Record<string, TypedStyleProps<C>> = {}
   const breakpointKeys = new Set(Object.keys(breakpoints))
 
   for (const [key, value] of Object.entries(styles)) {
@@ -106,12 +106,12 @@ export function generateContainerQuery(size: string): string {
 /**
  * Process container queries
  */
-export function processContainerQueries(
-  styles: Record<string, any>,
+export function processContainerQueries<C extends DesignConfig>(
+  styles: TypedStyleProps<C>,
   containers: Record<string, string> | undefined
 ): {
-  base: Record<string, any>
-  container: Record<string, Record<string, any>>
+  base: TypedStyleProps<C>
+  container: Record<string, TypedStyleProps<C>>
   containerType?: string
   containerName?: string
 } {
@@ -119,8 +119,8 @@ export function processContainerQueries(
     return { base: styles, container: {} }
   }
 
-  const base: Record<string, any> = {}
-  const container: Record<string, Record<string, any>> = {}
+  const base: TypedStyleProps<C> = {}
+  const container: Record<string, TypedStyleProps<C>> = {}
   let containerType: string | undefined
   let containerName: string | undefined
   const containerKeys = new Set(Object.keys(containers).map((k) => `@${k}`))

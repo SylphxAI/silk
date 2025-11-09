@@ -68,8 +68,8 @@ const shorthandMap: Record<string, string[]> = {
  */
 export function normalizeProps<C extends DesignConfig>(
   props: TypedStyleProps<C>
-): Record<string, any> {
-  const normalized: Record<string, any> = {}
+): TypedStyleProps<C> {
+  const normalized: TypedStyleProps<C> = {}
 
   for (const [key, value] of Object.entries(props)) {
     if (value === undefined || value === null) continue
@@ -118,8 +118,8 @@ function allEqual<T>(arr: T[]): boolean {
  * Merge properties into shorthand when possible
  * Example: { marginTop: 4, marginBottom: 4 } → { marginBlock: 4 }
  */
-export function mergeProperties(props: Record<string, any>): Record<string, any> {
-  const merged: Record<string, any> = { ...props }
+export function mergeProperties<C extends DesignConfig>(props: TypedStyleProps<C>): TypedStyleProps<C> {
+  const merged: TypedStyleProps<C> = { ...props }
   const processed = new Set<string>()
 
   // Try to merge each group
@@ -173,8 +173,8 @@ export function mergeProperties(props: Record<string, any>): Record<string, any>
  */
 export function optimizeProps<C extends DesignConfig>(
   props: TypedStyleProps<C>
-): Record<string, any> {
-  const result: Record<string, any> = {}
+): TypedStyleProps<C> {
+  const result: TypedStyleProps<C> = {}
 
   for (const [key, value] of Object.entries(props)) {
     if (value === undefined || value === null) continue

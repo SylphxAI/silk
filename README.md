@@ -38,16 +38,20 @@ bun add @sylphx/silk-nextjs  # That's it!
 
 **15+ frameworks supported with zero-codegen:**
 
-| Framework | Status | Setup |
-|-----------|--------|-------|
-| **Next.js** | ✅ Tested | `@sylphx/silk-nextjs` |
-| **Nuxt 3** | ✅ Ready | `@sylphx/silk-nuxt` |
-| **Vite + React/Vue/Svelte/Preact** | ✅ Tested | `@sylphx/silk-vite-plugin` |
-| **SvelteKit** | ✅ Ready | `@sylphx/silk-vite-plugin` |
-| **Astro** | ✅ Ready | `@sylphx/silk-vite-plugin` |
-| **Remix** | ✅ Ready | `@sylphx/silk-vite-plugin` |
-| **Create React App** | ✅ Ready | `@sylphx/silk-webpack-plugin` |
-| **Angular** | ✅ Ready | `@sylphx/silk-webpack-plugin` |
+| Framework | Status | Setup | Codegen Required |
+|-----------|--------|-------|------------------|
+| **Next.js** | ✅ Tested | `@sylphx/silk-nextjs` | Webpack: ❌, Turbopack: ✅ |
+| **Nuxt 3** | ✅ Ready | `@sylphx/silk-nuxt` | ❌ (Zero Codegen) |
+| **Vite + React** | ✅ Tested | `@sylphx/silk-vite-plugin` | ❌ (Zero Codegen) |
+| **Vite + Vue** | ✅ Tested | `@sylphx/silk-vite-plugin` | ❌ (Zero Codegen) |
+| **Vite + Svelte** | ✅ Tested | `@sylphx/silk-vite-plugin` | ❌ (Zero Codegen) |
+| **SvelteKit** | ✅ Ready | `@sylphx/silk-vite-plugin` | ❌ (Zero Codegen) |
+| **Astro** | ✅ Ready | `@sylphx/silk-vite-plugin` | ❌ (Zero Codegen) |
+| **Remix** | ✅ Ready | `@sylphx/silk-vite-plugin` | ❌ (Zero Codegen) |
+| **Create React App** | ✅ Ready | `@sylphx/silk-webpack-plugin` | ❌ (Zero Codegen) |
+| **Angular** | ✅ Ready | `@sylphx/silk-webpack-plugin` | ❌ (Zero Codegen) |
+
+**Note**: Most frameworks support true zero-codegen via Webpack/Vite plugins. Only Next.js Turbopack requires CLI codegen.
 
 [📚 View All Frameworks & Quick Start Guides →](./FRAMEWORK_QUICKSTART.md)
 
@@ -76,7 +80,11 @@ Silk is the **smallest, fastest, and most feature-complete** zero-runtime CSS-in
 - Panda CSS: 5,936B gzipped (+1087%)
 - **Silk is 92% smaller**
 
-Unlike other frameworks, Silk requires **zero codegen** while achieving complete type safety through pure TypeScript. Perfect DX with instant autocomplete.
+Silk supports both zero-codegen and CLI-based approaches depending on your build system:
+- **Zero-Codegen**: Webpack/Vite plugins automatically extract CSS at build-time
+- **CLI Codegen**: Turbopack/Next.js 16+ requires `silk generate` for CSS extraction
+
+Perfect DX with instant autocomplete and flexible deployment options.
 
 ## ⚡ Why Silk?
 

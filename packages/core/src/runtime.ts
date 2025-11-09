@@ -332,9 +332,14 @@ export function createStyleSystem<C extends DesignConfig>(
   options?: { optimize?: boolean } & ProductionConfig & LayerConfig
 ) {
   const { optimize = true, enabled, order, defaultLayer, ...productionConfig } = options ?? {}
+
+  // Silk is "Zero Codegen" - runtime should only be used in development
+  // Production mode should be explicitly set, not auto-detected
+  const isProduction = productionConfig.production ?? false
+
   const prodConfig: ProductionConfig = {
-    production: productionConfig.production ?? false,
-    shortClassNames: productionConfig.shortClassNames ?? true,
+    production: isProduction,
+    shortClassNames: productionConfig.shortClassNames ?? false,  // Use hash-based (s{hash}) to match CLI and Babel plugin
     minify: productionConfig.minify ?? true,
     optimizeCSS: productionConfig.optimizeCSS ?? true,
     classPrefix: productionConfig.classPrefix,

@@ -5,7 +5,7 @@
 
 import { h, defineComponent, computed } from 'vue'
 import type { PropType, Component, VNode } from 'vue'
-import { createStyleSystem, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
+import { createStyleSystem, STYLE_PROP_NAMES, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
 
 export interface SilkVueSystem<C extends DesignConfig> {
   /**
@@ -63,35 +63,8 @@ export function createSilkVue<const C extends DesignConfig>(
 ): SilkVueSystem<C> {
   const styleSystem = createStyleSystem<C>(config)
 
-  // Define style prop names for splitting
-  const stylePropNames = [
-    // Color props
-    'color', 'bg', 'backgroundColor', 'borderColor',
-    // Spacing props
-    'm', 'margin', 'mt', 'marginTop', 'mr', 'marginRight',
-    'mb', 'marginBottom', 'ml', 'marginLeft',
-    'p', 'padding', 'pt', 'paddingTop', 'pr', 'paddingRight',
-    'pb', 'paddingBottom', 'pl', 'paddingLeft',
-    'gap',
-    // Size props
-    'w', 'width', 'h', 'height',
-    'minW', 'minWidth', 'minH', 'minHeight',
-    'maxW', 'maxWidth', 'maxH', 'maxHeight',
-    // Typography props
-    'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign',
-    // Layout props
-    'display', 'flexDirection', 'justifyContent', 'alignItems',
-    'gridTemplateColumns', 'gridTemplateRows', 'gridColumn', 'gridRow',
-    // Border props
-    'rounded', 'borderRadius', 'borderWidth',
-    // Effect props
-    'opacity', 'shadow', 'boxShadow',
-    // Pseudo states
-    '_hover', '_focus', '_active', '_disabled',
-    // Modern CSS
-    'containerType', 'containerName', '@container', '@scope', '@starting-style',
-    'viewTransitionName', 'contain'
-  ] as const
+  // Use shared style prop names from core
+  const stylePropNames = STYLE_PROP_NAMES
 
   /**
    * Create a styled Vue component

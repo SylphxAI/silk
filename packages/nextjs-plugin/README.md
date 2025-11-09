@@ -32,7 +32,10 @@ Create a `.babelrc` file in your project root:
 }
 ```
 
-**That's it!** Works with both Webpack and Turbopack (Next.js 16+).
+**That's it!** Silk supports both Webpack and Turbopack modes:
+
+- **Webpack Mode** (Recommended): Zero codegen - automatic CSS extraction via virtual module
+- **Turbopack Mode**: CLI codegen required - generate CSS files manually
 
 ### 3. Use Silk in your components
 
@@ -110,25 +113,56 @@ my-app/
 
 ## Turbopack Support (Next.js 16+)
 
-Silk v3.3.1+ works seamlessly with Turbopack! No additional setup needed beyond the `.babelrc` file.
+Silk supports both Webpack and Turbopack modes, but they work differently:
+
+### Webpack Mode (Recommended - Zero Codegen)
 
 ```bash
-next dev --turbo    # Turbopack mode (10x faster)
-next build --turbo  # Production build with Turbopack
+next dev     # Webpack mode (automatic CSS extraction)
+next build   # Production build
 ```
 
-**How it works:**
-- Next.js 16 automatically uses Babel when `.babelrc` exists
-- `@sylphx/babel-plugin-silk` transforms `css()` calls at build time
-- No CLI or `silk generate` needed
-- Zero runtime overhead, same as Webpack mode
+**Features:**
+- ✅ Zero codegen required
+- ✅ Automatic CSS extraction via SilkWebpackPlugin
+- ✅ Virtual CSS module (`silk.css`)
+- ✅ Zero runtime overhead
 
-**v3.3.0 → v3.3.1 Migration:**
-If you're upgrading from v3.3.0, you can now remove:
-- ❌ `@sylphx/silk-cli` dependency
-- ❌ `predev`/`prebuild` scripts running `silk generate`
-- ❌ `silk.generated.css` import
-- ✅ Just keep `.babelrc` + `@sylphx/babel-plugin-silk`
+### Turbopack Mode (Requires CLI)
+
+```bash
+# Install CLI tool
+npm install @sylphx/silk-cli
+
+# Add package.json scripts
+{
+  "predev": "silk generate --src ./app --output ./silk.generated.css",
+  "prebuild": "silk generate --src ./app --output ./silk.generated.css",
+  "dev": "next dev --turbo",
+  "build": "next build"
+}
+
+# Import generated CSS
+// app/layout.tsx
+import '../silk.generated.css'
+```
+
+**Features:**
+- ✅ 10x faster builds
+- ✅ Babel plugin transforms `css()` calls
+- ❌ Requires CLI codegen
+- ❌ Physical CSS files
+
+### Turbopack vs Webpack
+
+| Feature | Webpack | Turbopack |
+|---------|---------|-----------|
+| **Build Speed** | Standard | 10x faster |
+| **Codegen** | ❌ None | ✅ Required |
+| **CSS Output** | Virtual module | Physical file |
+| **Setup** | Simple | CLI + Scripts |
+
+**Recommendation**: Use Webpack for zero-codegen development. Use Turbopack if you need faster builds and don't mind the CLI step.
 
 ## Compatibility
 

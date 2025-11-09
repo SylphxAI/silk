@@ -1,0 +1,83 @@
+@layer reset, base, tokens, recipes;
+
+@layer utilities {
+  .s1ehecwq {
+    display: flex;
+  }
+
+  .s13axidf {
+    flex-direction: column;
+  }
+
+  .s1f9xeml {
+    align-items: center;
+  }
+
+  .s1yjw73p {
+    justify-content: center;
+  }
+
+  .sqauz0y {
+    min-height: 100vh;
+  }
+
+  .svc67z0 {
+    padding: 2rem;
+  }
+
+  .s9ysk7q {
+    background-color: #0a0a0a;
+  }
+
+  .sogg5kk {
+    font-size: 2.5rem;
+  }
+
+  .sj5n8sa {
+    font-weight: bold;
+  }
+
+  .s19p6zcl {
+    color: #fff;
+  }
+
+  .s1ka24yw {
+    margin-bottom: 1rem;
+  }
+
+  .ss1w8z4 {
+    font-size: 1.25rem;
+  }
+
+  .svvz0cw {
+    color: #aaa;
+  }
+
+  .s14qz323 {
+    margin-bottom: 2rem;
+  }
+
+  .sxex7r1 {
+    padding: 1rem 2rem;
+  }
+
+  .stlrl6x {
+    background-color: #8b5cf6;
+  }
+
+  .s1cunqab {
+    color: #fff;
+  }
+
+  .s19gcsfz {
+    border-radius: .5rem;
+  }
+
+  .s2453if {
+    font-size: 1.125rem;
+  }
+
+  .s1fmoa8v {
+    font-weight: 600;
+  }
+}

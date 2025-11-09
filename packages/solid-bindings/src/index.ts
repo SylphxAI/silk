@@ -5,7 +5,7 @@
 
 import { createComponent, splitProps, mergeProps } from 'solid-js'
 import type { Component, JSX } from 'solid-js'
-import { createStyleSystem, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
+import { createStyleSystem, STYLE_PROP_NAMES, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
 
 export interface SilkSolidSystem<C extends DesignConfig> {
   /**
@@ -65,35 +65,9 @@ export function createSilkSolid<const C extends DesignConfig>(
     element: E,
     baseStyles?: TypedStyleProps<C>
   ): Component<JSX.IntrinsicElements[E] & TypedStyleProps<C>> {
-    return (props) => {
-      // Split style props from element props
-      const [styleProps, elementProps] = splitProps(props, [
-        // Color props
-        'color', 'bg', 'backgroundColor', 'borderColor',
-        // Spacing props
-        'm', 'margin', 'mt', 'marginTop', 'mr', 'marginRight',
-        'mb', 'marginBottom', 'ml', 'marginLeft',
-        'p', 'padding', 'pt', 'paddingTop', 'pr', 'paddingRight',
-        'pb', 'paddingBottom', 'pl', 'paddingLeft',
-        'gap',
-        // Size props
-        'w', 'width', 'h', 'height',
-        'minW', 'minWidth', 'minH', 'minHeight',
-        'maxW', 'maxWidth', 'maxH', 'maxHeight',
-        // Typography props
-        'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign',
-        // Layout props
-        'display', 'flexDirection', 'justifyContent', 'alignItems',
-        // Border props
-        'rounded', 'borderRadius', 'borderWidth',
-        // Effect props
-        'opacity', 'shadow', 'boxShadow',
-        // Pseudo states
-        '_hover', '_focus', '_active', '_disabled',
-        // Modern CSS
-        'containerType', 'containerName', '@container', '@scope', '@starting-style',
-        'viewTransitionName', 'contain'
-      ] as const)
+    return (props: JSX.IntrinsicElements[E] & TypedStyleProps<C>) => {
+      // Split style props from element props using shared list
+      const [styleProps, elementProps] = splitProps(props, STYLE_PROP_NAMES as readonly string[])
 
       // Merge base styles with props
       const mergedStyles = mergeProps(baseStyles || {}, styleProps)

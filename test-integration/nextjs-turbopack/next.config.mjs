@@ -1,11 +1,6 @@
-import { withSilk } from '@sylphx/silk-nextjs'
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // 不強制設置 turbopack，讓 Next.js 自動檢測
+}
 
-export default withSilk({
-  // Next.js config
-  // Note: Use --webpack flag for production builds
-  // Dev mode can use --turbo flag
-}, {
-  // Silk config
-  outputFile: 'silk.css',
-  minify: true,
-})
+export default nextConfig

@@ -2,7 +2,7 @@
  * @sylphx/silk-solid - Vite plugin
  */
 
-import { vite as silkVite, type SilkPluginOptions } from '@sylphx/silk-vite-plugin'
+import silkVite from "@sylphx/silk-vite-plugin"; import type { SilkVitePluginOptions } from '@sylphx/silk-vite-plugin'
 
 /**
  * Silk plugin for Solid.js
@@ -22,6 +22,6 @@ import { vite as silkVite, type SilkPluginOptions } from '@sylphx/silk-vite-plug
  * })
  * ```
  */
-export function silkPlugin(options: SilkPluginOptions = {}) {
+export function silkPlugin(options: SilkVitePluginOptions = {}) {
   return silkVite(options)
 }

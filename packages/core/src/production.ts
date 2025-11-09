@@ -75,8 +75,10 @@ export function generateShortClassName(styleId: string): string {
 /**
  * MurmurHash2 implementation (matches babel-plugin-silk)
  * Fast, collision-resistant, deterministic
+ *
+ * Exported for use by Babel plugin to ensure consistency
  */
-function murmurHash2(str: string): string {
+export function murmurHash2(str: string): string {
   let h = 0
   for (let i = 0; i < str.length; i++) {
     const c = str.charCodeAt(i)
@@ -97,8 +99,11 @@ export function hashStyleId(str: string): string {
 /**
  * Generate class name based on environment
  *
- * Development: silk-color-brand-500 (readable)
- * Production: a0 (short hashed)
+ * Development: silk_property_value_hash (readable, descriptive)
+ * Production: s{hash} (short)
+ *
+ * @param styleId - Format: "property-value" or "property-value-variant"
+ * @param config - Production configuration
  */
 export function generateClassName(
   styleId: string,
@@ -111,13 +116,42 @@ export function generateClassName(
     return generateShortClassName(styleId)
   }
 
-  // Development: readable name with prefix
-  const prefix = classPrefix || (production ? 's' : 'silk')
   const hash = hashStyleId(styleId)
 
-  // Production: s{hash} (no separator, shorter)
-  // Development: silk-{hash} (with separator for readability)
-  return production ? `${prefix}${hash}` : `${prefix}-${hash}`
+  if (production) {
+    // Production: s{hash} (no separator, shorter)
+    const prefix = classPrefix || 's'
+    return `${prefix}${hash}`
+  }
+
+  // Development: descriptive format matching Babel plugin
+  // Parse styleId to extract property, value, variant
+  const prefix = classPrefix || 'silk'
+  const parts = styleId.split('-')
+
+  if (parts.length >= 2) {
+    const property = parts[0]
+    const variant = parts.length > 2 ? parts[parts.length - 1] : ''
+    const value = parts.slice(1, variant ? -1 : undefined).join('')
+
+    // Sanitize value for class name
+    const sanitizedValue = value
+      .replace(/[^a-zA-Z0-9]/g, '')
+      .toLowerCase()
+      .slice(0, 10) || 'val'
+
+    const shortHash = hash.slice(0, 4)
+
+    if (variant && !['px', 'em', 'rem', 'vh', 'vw'].includes(variant)) {
+      // Has variant (hover, md, etc.)
+      return `${prefix}_${variant}_${property}_${sanitizedValue}_${shortHash}`
+    }
+
+    return `${prefix}_${property}_${sanitizedValue}_${shortHash}`
+  }
+
+  // Fallback: simple hash-based format
+  return `${prefix}-${hash}`
 }
 
 /**

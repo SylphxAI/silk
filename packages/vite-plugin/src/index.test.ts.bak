@@ -1,0 +1,446 @@
+/**
+ * @sylphx/silk-vite-plugin
+ * Vite plugin tests
+ */
+
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { build } from 'vite';
+import { silkPlugin } from './index.js';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { tmpdir } from 'node:os';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+describe('silkPlugin', () => {
+  let tempDir: string;
+  let testFile: string;
+
+  beforeEach(async () => {
+    // Create temporary directory for tests
+    tempDir = path.join(tmpdir(), `silk-vite-test-${Date.now()}`);
+    await fs.mkdir(tempDir, { recursive: true });
+
+    // Create test source file
+    testFile = path.join(tempDir, 'test.tsx');
+    await fs.writeFile(testFile, `
+import { css } from '@sylphx/silk';
+
+const styles = css({
+  display: 'flex',
+  padding: 4,
+  color: 'blue.500',
+  _hover: {
+    color: 'blue.600'
+  }
+});
+
+export default styles;
+    `.trim(), 'utf-8');
+
+    // Create package.json
+    await fs.writeFile(
+      path.join(tempDir, 'package.json'),
+      JSON.stringify({ type: 'module' }, null, 2),
+      'utf-8'
+    );
+  });
+
+  afterEach(async () => {
+    // Clean up temporary directory
+    try {
+      await fs.rm(tempDir, { recursive: true, force: true });
+    } catch {
+      // Ignore cleanup errors
+    }
+  });
+
+  describe('plugin initialization', () => {
+    it('should create plugin with default options', () => {
+      const plugin = silkPlugin();
+
+      expect(plugin).toBeDefined();
+      expect(plugin.name).toBe('vite-plugin-silk');
+      expect(typeof plugin.configureServer).toBe('function');
+      expect(typeof plugin.buildStart).toBe('function');
+      expect(typeof plugin.resolveId).toBe('function');
+      expect(typeof plugin.load).toBe('function');
+    });
+
+    it('should create plugin with custom options', () => {
+      const options = {
+        srcDir: './src',
+        virtualModuleId: 'custom-silk.css',
+        minify: true,
+        debug: true,
+      };
+
+      const plugin = silkPlugin(options);
+      expect(plugin.name).toBe('vite-plugin-silk');
+    });
+
+    it('should handle different source directories', () => {
+      const plugin = silkPlugin({ srcDir: './app' });
+      expect(plugin.name).toBe('vite-plugin-silk');
+    });
+  });
+
+  describe('virtual module resolution', () => {
+    it('should resolve virtual module ID', () => {
+      const plugin = silkPlugin();
+      const resolveId = plugin.resolveId;
+      expect(resolveId).toBeDefined();
+
+      if (resolveId && 'handler' in resolveId) {
+        const result = resolveId.handler!('silk.css');
+        expect(result).toBe('silk.css');
+      } else {
+        // Fallback for older API
+        const result = (resolveId as any)!.call!('silk.css');
+        expect(result).toBe('silk.css');
+      }
+    });
+
+    it('should resolve custom virtual module ID', () => {
+      const plugin = silkPlugin({ virtualModuleId: 'custom.css' });
+      const result = plugin.resolveId!('custom.css');
+
+      expect(result).toBe('custom.css');
+    });
+
+    it('should not resolve non-virtual modules', () => {
+      const plugin = silkPlugin();
+      const result = plugin.resolveId!('./styles.css');
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle null virtual module ID', () => {
+      const plugin = silkPlugin({ virtualModuleId: null as any });
+      const result = plugin.resolveId!('silk.css');
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('CSS generation', () => {
+    it('should generate CSS for virtual module', async () => {
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+        debug: true,
+      });
+
+      // Simulate plugin loading the virtual module
+      const cssContent = plugin.load!('silk.css');
+
+      expect(cssContent).toBeDefined();
+      expect(typeof cssContent).toBe('string');
+      expect(cssContent).toContain('.silk_');
+      expect(cssContent).toContain('display:');
+      expect(cssContent).toContain('padding:');
+      expect(cssContent).toContain('color:');
+    });
+
+    it('should generate minified CSS when minify option is true', async () => {
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+        minify: true,
+      });
+
+      const cssContent = plugin.load!('silk.css');
+
+      expect(cssContent).toBeDefined();
+      expect(typeof cssContent).toBe('string');
+      // Minified CSS should not have extra whitespace
+      expect(cssContent).not.toContain('  ');
+      expect(cssContent).not.toContain('\n\n');
+    });
+
+    it('should handle empty source directory', async () => {
+      const emptyDir = path.join(tmpdir(), `silk-empty-${Date.now()}`);
+      await fs.mkdir(emptyDir, { recursive: true });
+
+      try {
+        const plugin = silkPlugin({
+          srcDir: emptyDir,
+        });
+
+        const cssContent = plugin.load!('silk.css');
+
+        expect(cssContent).toBeDefined();
+        expect(typeof cssContent).toBe('string');
+        // Should generate empty or minimal CSS
+        expect(cssContent.length).toBeLessThan(100);
+      } finally {
+        await fs.rm(emptyDir, { recursive: true, force: true });
+      }
+    });
+
+    it('should handle non-existent source directory', async () => {
+      const plugin = silkPlugin({
+        srcDir: path.join(tempDir, 'nonexistent'),
+      });
+
+      // Should not throw error
+      const cssContent = plugin.load!('silk.css');
+      expect(cssContent).toBeDefined();
+    });
+  });
+
+  describe('file watching', () => {
+    it('should set up file watching in development mode', async () => {
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+        debug: true,
+      });
+
+      // Mock Vite dev server
+      const mockServer = {
+        ws: {
+          send: vi.fn(),
+        },
+        watcher: {
+          add: vi.fn(),
+          on: vi.fn(),
+        },
+      };
+
+      await plugin.configureServer!(mockServer as any);
+
+      expect(mockServer.watcher.add).toHaveBeenCalledWith(tempDir);
+      expect(mockServer.watcher.on).toHaveBeenCalledWith('change', expect.any(Function));
+      expect(mockServer.watcher.on).toHaveBeenCalledWith('add', expect.any(Function));
+      expect(mockServer.watcher.on).toHaveBeenCalledWith('unlink', expect.any(Function));
+    });
+
+    it('should skip watching in build mode', async () => {
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+        minify: true,
+      });
+
+      // In build mode, configureServer might not be called
+      // This test ensures plugin doesn't crash when server is not available
+      expect(() => {
+        // Should not throw
+      }).not.toThrow();
+    });
+  });
+
+  describe('Vite integration', () => {
+    it('should work with Vite build process', async () => {
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+        virtualModuleId: 'silk.css',
+      });
+
+      // Create a simple Vite config
+      const viteConfig = {
+        root: tempDir,
+        plugins: [plugin],
+        logLevel: 'silent' as const,
+        build: {
+          write: false, // Don't write to disk
+        },
+      };
+
+      // This test would require more complex setup in a real environment
+      // For now, just ensure plugin doesn't crash during initialization
+      expect(() => {
+        // Simulate Vite calling plugin hooks
+        plugin.buildStart?.();
+        plugin.resolveId?.('silk.css');
+        plugin.load?.('silk.css');
+      }).not.toThrow();
+    });
+
+    it('should handle multiple source files', async () => {
+      // Create additional test files
+      const testFile2 = path.join(tempDir, 'test2.tsx');
+      await fs.writeFile(testFile2, `
+import { css } from '@sylphx/silk';
+
+const styles2 = css({
+  color: 'red.500',
+  margin: 8,
+});
+      `.trim(), 'utf-8');
+
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+      });
+
+      const cssContent = plugin.load!('silk.css');
+
+      expect(cssContent).toBeDefined();
+      // Should include styles from both files
+      expect(cssContent).toContain('blue.500');
+      expect(cssContent).toContain('red.500');
+      expect(cssContent).toContain('padding:');
+      expect(cssContent).toContain('margin:');
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle invalid source files gracefully', async () => {
+      // Create invalid TypeScript file
+      const invalidFile = path.join(tempDir, 'invalid.tsx');
+      await fs.writeFile(invalidFile, `
+import { css } from '@sylphx/silk';
+
+const invalid = css({
+  color: 'blue.500',
+  // Missing closing brace
+      `.trim(), 'utf-8');
+
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+        debug: true,
+      });
+
+      // Should not throw error
+      expect(() => {
+        plugin.load?.('silk.css');
+      }).not.toThrow();
+    });
+
+    it('should handle empty CSS generation', async () => {
+      // Create file with no css() calls
+      const emptyFile = path.join(tempDir, 'empty.tsx');
+      await fs.writeFile(emptyFile, `
+// No CSS calls here
+export const something = 'test';
+      `.trim(), 'utf-8');
+
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+      });
+
+      const cssContent = plugin.load!('silk.css');
+
+      expect(cssContent).toBeDefined();
+      expect(typeof cssContent).toBe('string');
+    });
+
+    it('should handle missing @sylphx/silk import', async () => {
+      const noImportFile = path.join(tempDir, 'no-import.tsx');
+      await fs.writeFile(noImportFile, `
+const styles = css({ color: 'red' }); // css not imported
+      `.trim(), 'utf-8');
+
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+      });
+
+      // Should handle gracefully
+      expect(() => {
+        plugin.load?.('silk.css');
+      }).not.toThrow();
+    });
+  });
+
+  describe('plugin configuration', () => {
+    it('should accept debug option', () => {
+      const plugin = silkPlugin({ debug: true });
+      expect(plugin.name).toBe('vite-plugin-silk');
+    });
+
+    it('should accept custom virtual module ID', () => {
+      const plugin = silkPlugin({ virtualModuleId: 'my-silk.css' });
+      expect(plugin.name).toBe('vite-plugin-silk');
+
+      const result = plugin.resolveId!('my-silk.css');
+      expect(result).toBe('my-silk.css');
+    });
+
+    it('should accept custom source directory', () => {
+      const customDir = './app';
+      const plugin = silkPlugin({ srcDir: customDir });
+      expect(plugin.name).toBe('vite-plugin-silk');
+    });
+
+    it('should accept scan options', () => {
+      const scanOptions = {
+        exclude: ['**/*.test.*'],
+        include: ['**/*.{ts,tsx}'],
+      };
+
+      const plugin = silkPlugin(scanOptions);
+      expect(plugin.name).toBe('vite-plugin-silk');
+    });
+  });
+
+  describe('CSS features', () => {
+    it('should generate atomic CSS classes', async () => {
+      // Create file with repeated properties
+      const atomicFile = path.join(tempDir, 'atomic.tsx');
+      await fs.writeFile(atomicFile, `
+import { css } from '@sylphx/silk';
+
+const styles1 = css({ color: 'blue.500' });
+const styles2 = css({ color: 'blue.500' }); // Same property-value
+const styles3 = css({ color: 'red.500' }); // Different value
+      `.trim(), 'utf-8');
+
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+      });
+
+      const cssContent = plugin.load!('silk.css');
+
+      expect(cssContent).toBeDefined();
+      // Should have atomic classes (one class per property-value pair)
+      const colorMatches = cssContent.match(/color:\s*[^;]+/g) || [];
+      expect(colorMatches.length).toBeGreaterThanOrEqual(2); // At least blue and red
+    });
+
+    it('should handle pseudo selectors', async () => {
+      const pseudoFile = path.join(tempDir, 'pseudo.tsx');
+      await fs.writeFile(pseudoFile, `
+import { css } from '@sylphx/silk';
+
+const styles = css({
+  color: 'blue.500',
+  _hover: { color: 'blue.600' },
+  _focus: { outline: '2px solid' },
+});
+      `.trim(), 'utf-8');
+
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+      });
+
+      const cssContent = plugin.load!('silk.css');
+
+      expect(cssContent).toBeDefined();
+      expect(cssContent).toContain(':hover');
+      expect(cssContent).toContain(':focus');
+    });
+
+    it('should handle responsive styles', async () => {
+      const responsiveFile = path.join(tempDir, 'responsive.tsx');
+      await fs.writeFile(responsiveFile, `
+import { css } from '@sylphx/silk';
+
+const styles = css({
+  width: '100%',
+  '@media (min-width: 768px)': {
+    width: '50%',
+  },
+});
+      `.trim(), 'utf-8');
+
+      const plugin = silkPlugin({
+        srcDir: tempDir,
+      });
+
+      const cssContent = plugin.load!('silk.css');
+
+      expect(cssContent).toBeDefined();
+      expect(cssContent).toContain('@media');
+      expect(cssContent).toContain('min-width: 768px');
+    });
+  });
+});

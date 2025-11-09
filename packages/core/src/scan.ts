@@ -9,6 +9,12 @@
 
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { parse } from '@babel/parser';
+import traverseModule from '@babel/traverse';
+import * as t from '@babel/types';
+
+// Handle both CJS and ESM imports
+const traverse = (traverseModule as any).default || traverseModule;
 
 /**
  * Result of scanning a single file
@@ -109,46 +115,97 @@ function patternToRegex(pattern: string): RegExp {
 }
 
 /**
- * Simple regex-based CSS extraction
+ * Production-quality AST-based CSS extraction
  *
- * This is a simplified approach that uses regex to find css() calls.
- * It's faster than full AST parsing but may miss complex cases.
+ * Uses @babel/parser and @babel/traverse to safely parse css() calls
+ * without using eval or regex hacks.
  *
- * For production, consider using @babel/parser or @swc/core
+ * Handles:
+ * - Simple objects: css({ color: 'red' })
+ * - Nested objects: css({ _hover: { color: 'blue' } })
+ * - Type assertions: css({ color: 'red' } as const)
+ * - Satisfies operator: css({ color: 'red' } satisfies StyleProps)
+ *
+ * Skips (with warnings if DEBUG=true):
+ * - Spread operators: css({ ...baseStyles })
+ * - Computed properties: css({ [key]: value })
+ * - Variables: css({ color: brandColor })
+ * - Template literals with expressions: css({ width: `${size}px` })
  */
 function extractCssFromFile(filePath: string): ScanResult {
-  const content = fs.readFileSync(filePath, 'utf-8');
+  let content = fs.readFileSync(filePath, 'utf-8');
   const cssRules: ScanResult['cssRules'] = [];
 
-  // Match css({ ... }) or css({ ... } as any) or css({ ... } as const) or css({ ... } satisfies Type)
-  // This regex is simplified - real implementation should use AST
-  // Matches: css({ ... }), css({ ... } as any), css({ ... } as const), css({ ... } satisfies X)
-  const cssCallRegex = /css\s*\(\s*({[\s\S]*?})\s*(?:(?:as|satisfies)\s+[\w<>]+)?\s*\)/g;
+  // Extract <script> content from Vue/Svelte files
+  if (filePath.endsWith('.vue') || filePath.endsWith('.svelte')) {
+    const scriptMatch = content.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+    if (scriptMatch && scriptMatch[1]) {
+      content = scriptMatch[1];
+    } else {
+      // No script section found
+      return { filePath, cssRules: [] };
+    }
+  }
 
-  let match;
-  while ((match = cssCallRegex.exec(content)) !== null) {
-    try {
-      // Extract the object literal
-      const stylesStr = match[1];
+  try {
+    // Parse file to AST using Babel parser
+    const ast = parse(content, {
+      sourceType: 'module',
+      plugins: [
+        'typescript',
+        'jsx',
+        'decorators-legacy'
+      ],
+      errorRecovery: true
+    });
 
-      // HACK: Use eval to parse object literal
-      // In production, use proper AST parsing
-      // This is unsafe and only works for simple cases
-      const styles = new Function(`return ${stylesStr}`)();
+    // Traverse AST to find css() calls
+    traverse(ast, {
+      CallExpression(path: any) {
+        // Check if this is a css() call
+        if (
+          t.isIdentifier(path.node.callee) &&
+          path.node.callee.name === 'css' &&
+          path.node.arguments.length > 0
+        ) {
+          let firstArg = path.node.arguments[0];
 
-      // Calculate line number for debugging
-      const beforeMatch = content.slice(0, match.index);
-      const line = beforeMatch.split('\n').length;
+          // Unwrap type assertions: css({ ... } as any) or css({ ... } satisfies Type)
+          while (t.isTSAsExpression(firstArg) || t.isTSSatisfiesExpression(firstArg)) {
+            firstArg = firstArg.expression;
+          }
 
-      cssRules.push({
-        styles,
-        loc: { line, column: match.index - beforeMatch.lastIndexOf('\n') }
-      });
-    } catch (err) {
-      // Skip invalid CSS calls
-      if (process.env.DEBUG) {
-        console.warn(`Failed to parse css() call in ${filePath}:`, err);
+          // Only process object literal arguments
+          if (t.isObjectExpression(firstArg)) {
+            try {
+              // Convert AST ObjectExpression to plain JavaScript object
+              const styles = evaluateObjectExpression(firstArg);
+
+              // Get location info
+              const loc = firstArg.loc;
+
+              cssRules.push({
+                styles,
+                loc: loc ? {
+                  line: loc.start.line,
+                  column: loc.start.column
+                } : undefined
+              });
+            } catch (err) {
+              if (process.env.DEBUG) {
+                console.warn(
+                  `Failed to evaluate css() call at ${filePath}:${firstArg.loc?.start.line}:`,
+                  err
+                );
+              }
+            }
+          }
+        }
       }
+    });
+  } catch (err) {
+    if (process.env.DEBUG) {
+      console.warn(`Failed to parse file ${filePath}:`, err);
     }
   }
 
@@ -156,6 +213,80 @@ function extractCssFromFile(filePath: string): ScanResult {
     filePath,
     cssRules
   };
+}
+
+/**
+ * Safely evaluate an ObjectExpression AST node to a plain object
+ */
+function evaluateObjectExpression(node: t.ObjectExpression): Record<string, any> {
+  const result: Record<string, any> = {};
+
+  for (const prop of node.properties) {
+    if (t.isSpreadElement(prop)) {
+      // Skip spread elements - can't statically analyze
+      continue;
+    }
+
+    if (t.isObjectProperty(prop)) {
+      // Get property key
+      let key: string | undefined;
+      if (prop.computed && t.isStringLiteral(prop.key)) {
+        key = prop.key.value;
+      } else if (t.isIdentifier(prop.key)) {
+        key = prop.key.name;
+      } else if (t.isStringLiteral(prop.key)) {
+        key = prop.key.value;
+      } else if (t.isNumericLiteral(prop.key)) {
+        key = String(prop.key.value);
+      } else {
+        continue; // Skip computed properties
+      }
+
+      // Get property value
+      const value = evaluateValue(prop.value);
+      if (value !== undefined) {
+        result[key] = value;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Evaluate an AST node to a plain JavaScript value
+ */
+function evaluateValue(node: t.Node): any {
+  if (t.isStringLiteral(node)) return node.value;
+  if (t.isNumericLiteral(node)) return node.value;
+  if (t.isBooleanLiteral(node)) return node.value;
+  if (t.isNullLiteral(node)) return null;
+
+  if (t.isObjectExpression(node)) {
+    return evaluateObjectExpression(node);
+  }
+
+  if (t.isArrayExpression(node)) {
+    return node.elements
+      .map(el => el ? evaluateValue(el) : null)
+      .filter(v => v !== null);
+  }
+
+  if (t.isUnaryExpression(node)) {
+    if (node.operator === '-' && t.isNumericLiteral(node.argument)) {
+      return -node.argument.value;
+    }
+  }
+
+  if (t.isTemplateLiteral(node)) {
+    // Only handle static template literals
+    if (node.expressions.length === 0 && node.quasis.length === 1) {
+      return node.quasis[0]?.value.cooked;
+    }
+  }
+
+  // Can't statically evaluate: identifiers, member expressions, function calls, etc.
+  return undefined;
 }
 
 /**

@@ -1,5 +1,30 @@
 # @sylphx/silk-react
 
+## 2.0.4
+
+### Patch Changes
+
+- feat(runtime): auto-detect NODE_ENV for production class names
+
+  Runtime `css()` function now automatically detects `process.env.NODE_ENV === 'production'` and generates short hash-based class names (`s{hash}`) instead of development format (`silk_property_value_hash`).
+
+  This enables production optimizations for:
+
+  - Next.js 16 Turbopack (without Babel plugin support)
+  - Webpack plugin mode
+  - Any runtime-based usage
+
+  Breaking change: Default `shortClassNames` changed from `true` to `false` to match CLI and Babel plugin behavior (hash-based instead of counter-based).
+
+- Updated dependencies
+  - @sylphx/silk@2.2.0
+
+## 2.0.3
+
+### Patch Changes
+
+- chore: update @sylphx/silk dependency to ^2.1.1 for unified hash implementation
+
 ## 2.0.2
 
 ### Patch Changes

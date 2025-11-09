@@ -5,7 +5,7 @@
 
 import { h, type FunctionComponent, type JSX } from 'preact'
 import { useMemo } from 'preact/hooks'
-import { createStyleSystem, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
+import { createStyleSystem, STYLE_PROP_SET, type DesignConfig, type TypedStyleProps, type StyleSystem } from '@sylphx/silk'
 
 export interface SilkPreactSystem<C extends DesignConfig> {
   /**
@@ -63,25 +63,8 @@ export function createSilkPreact<const C extends DesignConfig>(
 ): SilkPreactSystem<C> {
   const styleSystem = createStyleSystem<C>(config)
 
-  // Style prop names for extraction
-  const stylePropNames = new Set([
-    'color', 'bg', 'backgroundColor', 'borderColor',
-    'm', 'margin', 'mt', 'marginTop', 'mr', 'marginRight',
-    'mb', 'marginBottom', 'ml', 'marginLeft',
-    'p', 'padding', 'pt', 'paddingTop', 'pr', 'paddingRight',
-    'pb', 'paddingBottom', 'pl', 'paddingLeft',
-    'gap', 'w', 'width', 'h', 'height',
-    'minW', 'minWidth', 'minH', 'minHeight',
-    'maxW', 'maxWidth', 'maxH', 'maxHeight',
-    'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing', 'textAlign',
-    'display', 'flexDirection', 'justifyContent', 'alignItems',
-    'gridTemplateColumns', 'gridTemplateRows', 'gridColumn', 'gridRow',
-    'rounded', 'borderRadius', 'borderWidth',
-    'opacity', 'shadow', 'boxShadow',
-    '_hover', '_focus', '_active', '_disabled',
-    'containerType', 'containerName', '@container', '@scope', '@starting-style',
-    'viewTransitionName', 'contain'
-  ])
+  // Use shared style prop set from core
+  const stylePropNames = STYLE_PROP_SET
 
   /**
    * Create a styled Preact component
@@ -90,16 +73,16 @@ export function createSilkPreact<const C extends DesignConfig>(
     element: E,
     baseStyles?: TypedStyleProps<C>
   ): FunctionComponent<JSX.IntrinsicElements[E] & TypedStyleProps<C>> {
-    return function StyledComponent(props: any) {
+    return function StyledComponent(props: JSX.IntrinsicElements[E] & TypedStyleProps<C>) {
       // Extract style props from component props
-      const styleProps: Record<string, any> = {}
-      const elementProps: Record<string, any> = {}
+      const styleProps: Partial<TypedStyleProps<C>> = {}
+      const elementProps: Partial<JSX.IntrinsicElements[E]> = {}
 
       for (const key in props) {
-        if (stylePropNames.has(key)) {
-          styleProps[key] = props[key]
+        if (stylePropNames.has(key as any)) {
+          (styleProps as any)[key] = props[key]
         } else {
-          elementProps[key] = props[key]
+          (elementProps as any)[key] = props[key]
         }
       }
 

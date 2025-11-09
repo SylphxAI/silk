@@ -1,6 +1,6 @@
 {
   "name": "@sylphx/silk-react",
-  "version": "2.0.2",
+  "version": "2.0.4",
   "description": "React integration for Silk - Type-safe CSS-in-TypeScript with modern color functions and native nesting",
   "keywords": [
     "silk",
@@ -40,7 +40,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@sylphx/silk": "^2.0.0"
+    "@sylphx/silk": "^2.2.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

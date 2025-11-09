@@ -23,7 +23,7 @@
     },
     "examples/babel-plugin-test": {
       "name": "babel-plugin-test",
-      "version": "0.0.5",
+      "version": "0.0.7",
       "dependencies": {
         "@babel/core": "^7.23.0",
         "@sylphx/babel-plugin-silk": "workspace:*",
@@ -47,7 +47,7 @@
     },
     "examples/nextjs-swc-test": {
       "name": "nextjs-swc-test",
-      "version": "0.1.11",
+      "version": "0.1.14",
       "dependencies": {
         "@sylphx/silk": "workspace:*",
         "@sylphx/silk-nextjs": "workspace:*",
@@ -64,7 +64,7 @@
     },
     "examples/react-demo": {
       "name": "react-demo",
-      "version": "0.0.10",
+      "version": "0.0.13",
       "dependencies": {
         "@sylphx/silk": "workspace:*",
         "@sylphx/silk-react": "workspace:*",
@@ -82,7 +82,7 @@
     },
     "examples/vite-react-test": {
       "name": "vite-react-test",
-      "version": "0.0.3",
+      "version": "0.0.5",
       "dependencies": {
         "@sylphx/silk": "workspace:*",
         "react": "^18.2.0",
@@ -116,10 +116,11 @@
     },
     "packages/babel-plugin-silk": {
       "name": "@sylphx/babel-plugin-silk",
-      "version": "2.0.3",
+      "version": "2.0.4",
       "dependencies": {
         "@babel/core": "^7.23.0",
         "@babel/types": "^7.23.0",
+        "@sylphx/silk": "^2.2.0",
       },
       "devDependencies": {
         "@babel/preset-typescript": "^7.23.0",
@@ -134,7 +135,7 @@
     },
     "packages/cli": {
       "name": "@sylphx/silk-cli",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "bin": {
         "silk": "./dist/index.js",
       },
@@ -150,18 +151,22 @@
     },
     "packages/core": {
       "name": "@sylphx/silk",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "dependencies": {
+        "@babel/parser": "^7.23.0",
+        "@babel/traverse": "^7.23.0",
+        "@babel/types": "^7.23.0",
         "lightningcss-wasm": "^1.30.1",
       },
       "devDependencies": {
+        "@types/babel__traverse": "^7.28.0",
         "typescript": "^5.3.0",
         "vitest": "^1.6.0",
       },
     },
     "packages/nextjs-plugin": {
       "name": "@sylphx/silk-nextjs",
-      "version": "3.3.1",
+      "version": "3.3.3",
       "dependencies": {
         "@sylphx/silk-webpack-plugin": "^1.0.2",
       },
@@ -208,26 +213,26 @@
     },
     "packages/preset-material": {
       "name": "@sylphx/silk-preset-material",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "devDependencies": {
-        "@sylphx/silk": "^2.1.0",
+        "@sylphx/silk": "^2.2.0",
         "@types/node": "^20.0.0",
         "typescript": "^5.3.0",
       },
       "peerDependencies": {
-        "@sylphx/silk": "^2.1.0",
+        "@sylphx/silk": "^2.2.0",
       },
     },
     "packages/preset-minimal": {
       "name": "@sylphx/silk-preset-minimal",
-      "version": "4.0.0",
+      "version": "5.0.0",
       "devDependencies": {
-        "@sylphx/silk": "^2.1.0",
+        "@sylphx/silk": "^2.2.0",
         "@types/node": "^20.0.0",
         "typescript": "^5.3.0",
       },
       "peerDependencies": {
-        "@sylphx/silk": "^2.1.0",
+        "@sylphx/silk": "^2.2.0",
       },
     },
     "packages/qwik-bindings": {
@@ -248,7 +253,7 @@
     },
     "packages/react": {
       "name": "@sylphx/silk-react",
-      "version": "2.0.2",
+      "version": "2.0.4",
       "dependencies": {
         "@sylphx/silk": "^2.0.0",
       },
@@ -359,7 +364,7 @@
     },
     "packages/webpack-plugin": {
       "name": "@sylphx/silk-webpack-plugin",
-      "version": "1.0.2",
+      "version": "1.0.3",
       "dependencies": {
         "@sylphx/silk": "^2.1.0",
         "webpack-virtual-modules": "^0.6.2",

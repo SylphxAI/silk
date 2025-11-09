@@ -107,8 +107,11 @@ describe('production optimizations', () => {
 
       const className = generateClassName('color-red', config)
 
-      expect(className).toMatch(/^silk-/)
-      expect(className.length).toBeGreaterThan(5)
+      // New format: silk_property_value_hash (descriptive)
+      expect(className).toMatch(/^silk_/)
+      expect(className).toContain('color')
+      expect(className).toContain('red')
+      expect(className.length).toBeGreaterThan(10)
     })
 
     it('should respect custom classPrefix', () => {
@@ -119,7 +122,9 @@ describe('production optimizations', () => {
 
       const className = generateClassName('color-red', config)
 
-      expect(className).toMatch(/^custom-/)
+      // Custom prefix with descriptive format
+      expect(className).toMatch(/^custom_/)
+      expect(className).toContain('color')
     })
 
     it('should use short prefix in production when specified', () => {

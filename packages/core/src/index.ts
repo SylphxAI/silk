@@ -63,6 +63,14 @@ export type {
   TokenScale,
 } from './types.js'
 
+// Style prop utilities for framework bindings
+export {
+  STYLE_PROP_NAMES,
+  STYLE_PROP_SET,
+  isStyleProp,
+} from './style-props.js'
+export type { StylePropName } from './style-props.js'
+
 // Extended types
 export type {
   ResponsiveStyleProps,

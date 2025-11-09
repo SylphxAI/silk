@@ -1,5 +1,31 @@
 # @sylphx/silk-nextjs
 
+## 3.3.4
+
+### Patch Changes
+
+- ## Fixes
+
+  - Clarified Silk's Zero Codegen strategy in documentation
+  - Fixed Turbopack support documentation - CLI codegen is required for Turbopack mode
+  - Updated Next.js plugin README with accurate Webpack vs Turbopack setup instructions
+  - Removed NODE_ENV auto-detection from runtime to maintain Zero Codegen principle
+  - Added comprehensive framework testing and documentation review
+
+  ## Documentation
+
+  - Updated main README.md with accurate framework support matrix
+  - Enhanced FRAMEWORK_QUICKSTART.md with detailed Next.js Webpack/Turbopack comparison
+  - Clarified that Webpack mode supports true zero-codegen while Turbopack requires CLI
+  - Added feature comparison tables for Next.js build modes
+  - Fixed inconsistent documentation across all framework guides
+
+## 3.3.3
+
+### Patch Changes
+
+- chore: update @sylphx/silk-webpack-plugin dependency to ^1.0.3 for unified hash implementation
+
 ## 3.3.2
 
 ### Patch Changes

@@ -40,6 +40,16 @@ const button = css({
 - ✅ **Critical CSS** - Built-in extraction (unique feature)
 - ✅ **Performance Monitoring** - Built-in analytics
 
+## Codegen Strategy
+
+Silk follows a **pure build-time** approach:
+
+1. **Development**: Runtime `css()` for hot reload and debugging
+2. **Production**: Babel plugin transforms `css()` to static strings at build-time
+3. **No Runtime**: Zero JavaScript overhead in production bundles
+
+The default `css()` function throws an error if not transformed by the build plugin, ensuring zero runtime overhead.
+
 ## Ecosystem
 
 ### Framework Integrations
