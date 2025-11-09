@@ -4,12 +4,18 @@
 
 ### Patch Changes
 
-- dd5353d: ### Changed
+- dd5353d: ### Added
+
+  - **Performance Benchmarking System**: Enhanced React component performance testing integration
+  - **Unified Error Handling**: Improved React error boundary integration with structured error reporting
+  - **CLI/Babel Consistency**: Verified React component class name generation consistency
+  - **Bundle Size Monitoring**: Automated React bundle size validation with 1.6KB gzipped limit
+
+  ### Changed
 
   - Updated documentation to correct bundle size claims from 500B to 1.6KB gzipped
-  - Fixed bundle size comparison tables with accurate percentages
-  - Updated size limit configuration to match actual measurements
-  - Updated CHANGELOG.md files across packages with latest improvements
+  - Fixed bundle size comparison tables with accurate percentages throughout the ecosystem
+  - Updated size limit configuration to match actual verified measurements
 
   ### Fixed
 

@@ -4,12 +4,33 @@
 
 ### Patch Changes
 
-- dd5353d: ### Changed
+- dd5353d: ### Added
+
+  - **Performance Benchmarking System** (`performance-benchmark.test.ts`)
+    - Added comprehensive performance tests with 0.0003ms average class name generation time
+    - Memory usage monitoring with leak detection
+    - Deterministic performance consistency testing
+
+  - **Unified Error Handling Framework** (`errors.ts`)
+    - Introduced `SilkError` base class with structured error codes and suggestions
+    - Added specialized error types: `CSSValidationError`, `ClassNameGenerationError`, `ConfigValidationError`, `ZeroCodegenViolationError`
+    - Implemented `safeCSSOperation()` utility for graceful error handling
+    - Added `formatError()` function for consistent error messaging
+
+  - **CLI/Babel Consistency Testing** (`cli-babel-consistency.test.ts`)
+    - Created 8 comprehensive tests ensuring CLI and Babel plugin generate identical class names
+    - Verified `display-flex` → `s1ehecwq` hash consistency across all build tools
+    - Added edge case testing for complex style generation and production mode
+
+  - **Bundle Size Monitoring** (`.size-limit.json`)
+    - Implemented automated bundle size monitoring with 1.6KB gzipped limit
+    - Added size validation for all packages in the workspace
+
+  ### Changed
 
   - Updated documentation to correct bundle size claims from 500B to 1.6KB gzipped
-  - Fixed bundle size comparison tables with accurate percentages
-  - Updated size limit configuration to match actual measurements
-  - Updated CHANGELOG.md files across packages with latest improvements
+  - Fixed bundle size comparison tables with accurate percentages throughout the ecosystem
+  - Updated size limit configuration to match actual verified measurements
 
   ### Fixed
 

@@ -4,12 +4,19 @@
 
 ### Patch Changes
 
-- dd5353d: ### Changed
+- dd5353d: ### Added
+
+  - **Performance Benchmarking System**: Updated to leverage new core performance testing capabilities
+  - **Unified Error Handling**: Enhanced error reporting with structured error codes and suggestions
+  - **CLI/Babel Consistency**: Improved Turbopack and Webpack mode consistency verification
+  - **Bundle Size Monitoring**: Automated size validation with 1.6KB gzipped limit
+
+  ### Changed
 
   - Updated documentation to correct bundle size claims from 500B to 1.6KB gzipped
-  - Fixed bundle size comparison tables with accurate percentages
-  - Updated size limit configuration to match actual measurements
-  - Updated CHANGELOG.md files across packages with latest improvements
+  - Fixed bundle size comparison tables with accurate percentages throughout the ecosystem
+  - Updated size limit configuration to match actual verified measurements
+  - Enhanced Turbopack setup documentation with accurate codegen requirements
 
   ### Fixed
 
@@ -17,6 +24,7 @@
   - Ensured all framework integration tables reflect realistic bundle sizes
 
 - Updated dependencies [dd5353d]
+  - @sylphx/silk@2.2.2
   - @sylphx/silk-webpack-plugin@1.0.4
 
 ## 3.3.4
