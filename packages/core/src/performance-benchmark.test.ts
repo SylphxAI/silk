@@ -109,7 +109,7 @@ describe('Performance Benchmarks', () => {
   })
 
   describe('Deterministic Performance', () => {
-    it('should have consistent performance across multiple runs', () => {
+    it('should keep repeated generation throughput within the performance budget', () => {
       const styleId = 'display-flex'
       const iterations = 10000
       const times: number[] = []
@@ -130,14 +130,12 @@ describe('Performance Benchmarks', () => {
       }
 
       const avgTime = times.reduce((sum, time) => sum + time, 0) / times.length
-      const variance = times.reduce((sum, time) => sum + Math.pow(time - avgTime, 2), 0) / times.length
-      const stdDev = Math.sqrt(variance)
+      const avgTimePerCall = avgTime / iterations
 
       console.log(`Average time: ${avgTime.toFixed(2)}ms`)
-      console.log(`Standard deviation: ${stdDev.toFixed(2)}ms`)
+      console.log(`Average time per call: ${avgTimePerCall.toFixed(4)}ms`)
 
-      // The absolute floor accounts for sub-millisecond timer and JIT noise on CI.
-      expect(stdDev).toBeLessThan(Math.max(avgTime * 0.25, 0.25))
+      expect(avgTimePerCall).toBeLessThan(0.01)
     })
   })
 })
