@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    runs-on: [self-hosted, sylphx, linux, standard]
+    runs-on: sylphx-linux-standard
 
     steps:
       - uses: actions/checkout@v4
@@ -31,6 +31,7 @@ jobs:
       - name: Build packages
         run: |
           cd packages/core && bun run build
+          cd ../webpack-plugin && bun run build
           cd ../nextjs-plugin && bun run build
 
       - name: Run unit tests

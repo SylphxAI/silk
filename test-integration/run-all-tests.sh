@@ -42,7 +42,8 @@ echo -e "${YELLOW}📦 Test 2: Next.js Webpack Build${NC}"
 cd ../../test-integration/nextjs-webpack
 rm -rf .next node_modules
 npm install --silent --legacy-peer-deps
-if npm run build > /dev/null 2>&1; then
+WEBPACK_BUILD_LOG=/tmp/silk-webpack-build.log
+if npm run build > "$WEBPACK_BUILD_LOG" 2>&1; then
   if [ -f ".next/static/css/silk.css" ]; then
     CSS_SIZE=$(wc -c < .next/static/css/silk.css | tr -d ' ')
     echo -e "${GREEN}✅ Webpack build passed (CSS: ${CSS_SIZE} bytes)${NC}"
@@ -52,6 +53,7 @@ if npm run build > /dev/null 2>&1; then
   fi
 else
   echo -e "${RED}❌ Webpack build failed${NC}"
+  cat "$WEBPACK_BUILD_LOG"
   FAILED=$((FAILED+1))
 fi
 echo ""
