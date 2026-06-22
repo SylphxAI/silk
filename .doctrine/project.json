@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "repo": "SylphxAI/silk",
+    "name": "Silk",
+    "lifecycle": "production",
+    "layer": "foundation",
+    "summary": "Silk is a TypeScript package monorepo for zero-runtime CSS-in-TypeScript, framework integrations, build plugins, presets, examples, docs, SWC/Rust plugin work, and npm package release.",
+    "goals": [
+      "Provide type-safe styling with build-time CSS extraction and zero runtime cost.",
+      "Own the Silk package family, public exports, framework integrations, build plugins, presets, docs, examples, and release proof.",
+      "Keep product-specific design systems and app styles outside core packages."
+    ],
+    "nonGoals": [
+      "Own consuming applications' visual identity, product UI, routing, auth, persistence, or deployment.",
+      "Encode a customer-specific design system into Silk core.",
+      "Publish package changes without CI/release proof and npm registry readback."
+    ]
+  },
+  "boundaries": {
+    "owns": [
+      {
+        "name": "silk-package-ecosystem",
+        "description": "Core styling packages, build plugins, framework bindings, presets, examples, docs, and SWC/Rust plugin artifacts."
+      },
+      {
+        "name": "silk-package-release",
+        "description": "CI and release workflow evidence for the public Silk npm package family."
+      }
+    ],
+    "doesNotOwn": [
+      "Consuming applications' product UI, design tokens, routing, auth, persistence, deployment, or customer-specific styling rules.",
+      "Enterprise doctrine or organization-wide rulesets.",
+      "External framework internals beyond documented adapter contracts."
+    ],
+    "publicSurfaces": [
+      {
+        "type": "package-export",
+        "name": "Silk npm package family",
+        "location": "packages/*/package.json"
+      },
+      {
+        "type": "documentation",
+        "name": "Silk README, docs, package docs, and examples",
+        "location": "README.md, docs/, packages/*/README.md, examples/"
+      },
+      {
+        "type": "workflow",
+        "name": "Test, SWC plugin, and release workflows",
+        "location": ".github/workflows/test.yml, .github/workflows/swc-plugin-test.yml, .github/workflows/release.yml"
+      }
+    ],
+    "allowedDependencies": [
+      {
+        "repo": "SylphxAI/doctrine",
+        "surface": "enterprise engineering doctrine",
+        "direction": "downward"
+      },
+      {
+        "repo": "SylphxAI/.github",
+        "surface": "reusable release workflow",
+        "direction": "downward"
+      }
+    ],
+    "forbiddenCouplings": [
+      "Do not put product-specific design-system decisions into Silk core.",
+      "Do not couple framework bindings except through documented shared package surfaces.",
+      "Do not publish package changes without workflow-owned proof and npm registry readback."
+    ]
+  },
+  "documentation": {
+    "adr": {
+      "path": "docs/adr/",
+      "status": "planned"
+    },
+    "specs": {
+      "path": "README.md, docs/, packages/*/README.md",
+      "status": "present"
+    },
+    "catalog": {
+      "path": "PROJECT.md",
+      "status": "present"
+    },
+    "runbooks": {
+      "path": "AGENTS.md",
+      "status": "present"
+    },
+    "generatedReferences": {
+      "path": "packages/*/dist/, packages/swc-plugin/target/",
+      "status": "generated"
+    }
+  },
+  "delivery": {
+    "ciModel": "legacy-ci",
+    "requiredContexts": [
+      "test"
+    ],
+    "deployPath": "Pull requests run .github/workflows/test.yml; SWC plugin paths also run .github/workflows/swc-plugin-test.yml; main pushes run .github/workflows/release.yml via SylphxAI/.github.",
+    "productionProof": "Test workflow pass, SWC plugin workflow pass when applicable, release workflow completion for package changes, and npm registry readback for changed packages.",
+    "recoveryClass": "forward-fix-only",
+    "packageRelease": {
+      "publishesPackages": true,
+      "ecosystems": [
+        "npm"
+      ],
+      "releaseIntent": "Silk publishes public npm packages from the monorepo through the central reusable release workflow.",
+      "versionPr": "Version/changelog ownership is delegated to the central reusable release workflow at adoption time.",
+      "publisher": ".github/workflows/release.yml via SylphxAI/.github reusable release workflow with inherited repository secrets.",
+      "requiredContexts": [
+        "test"
+      ],
+      "publishProof": "npm registry readback for every changed @sylphx/silk package."
+    }
+  },
+  "adoption": {
+    "status": "baseline",
+    "gaps": [
+      {
+        "id": "stable-admission-fanin",
+        "description": "CI uses repo-local legacy Test/SWC workflows rather than ADR-29 stable fan-in contexts.",
+        "owner": "SylphxAI/silk",
+        "target": "before full doctrine adoption"
+      }
+    ]
+  }
+}
