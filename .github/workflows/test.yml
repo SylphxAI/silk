@@ -9,32 +9,100 @@ on:
     types: [checks_requested]
 
 jobs:
+  changed-files:
+    name: Detect affected surface
+    runs-on: [self-hosted, sylphx-linux-standard]
+    outputs:
+      product_changed: ${{ steps.classify.outputs.product_changed }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify affected surface
+        id: classify
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+            head="$PR_HEAD_SHA"
+          elif [[ "$EVENT_NAME" == "merge_group" ]]; then
+            base="$MERGE_GROUP_BASE_SHA"
+            head="$MERGE_GROUP_HEAD_SHA"
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            base="$PUSH_BEFORE"
+            head="$CURRENT_SHA"
+          else
+            echo "product_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "$base" || -z "$head" || "$base" =~ ^0+$ ]]; then
+            echo "product_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed_files="$(mktemp)"
+          git diff --name-only "$base" "$head" > "$changed_files"
+
+          if grep -Ev '^(\.doctrine/project\.json|AGENTS\.md|PROJECT\.md|\.github/workflows/test\.yml|\.github/workflows/swc-plugin-test\.yml)$' "$changed_files"; then
+            echo "product_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "product_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   test:
-    runs-on: [self-hosted, sylphx, linux, standard]
+    needs: changed-files
+    runs-on: [self-hosted, sylphx-linux-standard]
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Validate control plane files
+        if: needs.changed-files.outputs.product_changed == 'false'
+        run: |
+          test -f .doctrine/project.json
+          test -f AGENTS.md
+          test -f PROJECT.md
+          python3 -m json.tool .doctrine/project.json >/dev/null
+
       - name: Setup Bun
+        if: needs.changed-files.outputs.product_changed == 'true'
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
       - name: Setup Node.js
+        if: needs.changed-files.outputs.product_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install dependencies
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: bun install
 
       - name: Build packages
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/core && bun run build
           cd ../nextjs-plugin && bun run build
 
       - name: Run unit tests
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: cd packages/core && bun run test
 
       - name: Run integration tests
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: cd test-integration && ./run-all-tests.sh
