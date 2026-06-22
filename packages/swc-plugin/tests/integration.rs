@@ -128,8 +128,8 @@ fn test_css_rule_generation() {
 
 #[test]
 fn test_empty_object() {
-    use swc_plugin_silk::extract_styles;
     use swc_core::ecma::ast::ObjectLit;
+    use swc_plugin_silk::extract_styles;
 
     // Empty object should produce empty styles
     let empty_obj = ObjectLit {

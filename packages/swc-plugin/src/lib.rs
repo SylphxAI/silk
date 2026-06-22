@@ -1,13 +1,13 @@
+use serde::Deserialize;
+use std::collections::HashMap;
 use swc_core::{
+    common::DUMMY_SP,
     ecma::{
         ast::*,
         visit::{VisitMut, VisitMutWith},
     },
     plugin::{plugin_transform, proxies::TransformPluginProgramMetadata},
-    common::DUMMY_SP,
 };
-use serde::Deserialize;
-use std::collections::HashMap;
 
 /// Plugin configuration options
 #[derive(Debug, Clone, Deserialize)]
@@ -100,7 +100,8 @@ pub fn normalize_css_value(property: &str, value: &str) -> String {
             || property == "zIndex"
             || property == "fontWeight"
             || property == "lineHeight"
-            || property == "flex" {
+            || property == "flex"
+        {
             return value.to_string();
         }
 
@@ -280,7 +281,11 @@ impl VisitMut for SilkTransformVisitor {
         if let Expr::Call(call) = expr {
             if is_css_call(call) {
                 // Extract first argument (should be ObjectExpression)
-                if let Some(ExprOrSpread { spread: None, expr: arg }) = call.args.first() {
+                if let Some(ExprOrSpread {
+                    spread: None,
+                    expr: arg,
+                }) = call.args.first()
+                {
                     if let Expr::Object(obj) = &**arg {
                         // Extract styles from object (safe operation)
                         let styles = extract_styles(obj);
@@ -294,11 +299,7 @@ impl VisitMut for SilkTransformVisitor {
                         let mut class_names = Vec::new();
 
                         for (property, value) in &styles {
-                            let class_name = generate_class_name(
-                                property,
-                                value,
-                                &self.config,
-                            );
+                            let class_name = generate_class_name(property, value, &self.config);
 
                             // Generate and collect CSS rule
                             let css_rule = generate_css_rule(&class_name, property, value);
@@ -344,7 +345,10 @@ fn is_css_call(call: &CallExpr) -> bool {
 
 /// SWC plugin entry point
 #[plugin_transform]
-pub fn process_transform(mut program: Program, metadata: TransformPluginProgramMetadata) -> Program {
+pub fn process_transform(
+    mut program: Program,
+    metadata: TransformPluginProgramMetadata,
+) -> Program {
     use swc_core::plugin::metadata::TransformPluginMetadataContextKind;
 
     // Get filename (note: Turbopack only provides basename, not full path)
@@ -360,7 +364,8 @@ pub fn process_transform(mut program: Program, metadata: TransformPluginProgramM
         || filename.contains("forbidden")
         || filename.contains("not-found")
         || filename.contains("unauthorized")
-        || filename.contains("global-error") {
+        || filename.contains("global-error")
+    {
         return program;
     }
 
@@ -445,7 +450,9 @@ mod tests {
         assert_ne!(hash1, hash3);
 
         // Test Base-36 output (only 0-9, a-z)
-        assert!(hash1.chars().all(|c| c.is_ascii_alphanumeric() && !c.is_uppercase()));
+        assert!(hash1
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() && !c.is_uppercase()));
     }
 
     #[test]
@@ -485,20 +492,19 @@ mod tests {
         };
 
         // Test multiple properties to ensure we hit some that start with digits
-        let properties = vec![
-            ("p", "8"),
-            ("m", "4"),
-            ("bg", "red"),
-            ("color", "blue"),
-        ];
+        let properties = vec![("p", "8"), ("m", "4"), ("bg", "red"), ("color", "blue")];
 
         for (prop, value) in properties {
             let class_name = generate_class_name(prop, value, &config);
             let first_char = class_name.chars().next().unwrap();
 
             // First character must be a letter (g-p if mapped from digit)
-            assert!(first_char.is_ascii_alphabetic(),
-                "Class name '{}' starts with non-letter '{}'", class_name, first_char);
+            assert!(
+                first_char.is_ascii_alphabetic(),
+                "Class name '{}' starts with non-letter '{}'",
+                class_name,
+                first_char
+            );
         }
     }
 
@@ -622,7 +628,10 @@ mod tests {
             ("borderRadius", "12px", "hhxlwrj"),
         ];
 
-        println!("\n🔍 Extended Babel-SWC consistency verification ({} test cases):", test_cases.len());
+        println!(
+            "\n🔍 Extended Babel-SWC consistency verification ({} test cases):",
+            test_cases.len()
+        );
         println!("{}", "-".repeat(70));
 
         let mut pass_count = 0;
@@ -665,19 +674,50 @@ mod tests {
         };
 
         let test_values = vec![
-            ("bg", "red"), ("bg", "blue"), ("bg", "#000"), ("bg", "#fff"),
-            ("p", "0"), ("p", "1"), ("p", "2"), ("p", "4"), ("p", "8"), ("p", "16"),
-            ("m", "0"), ("m", "1"), ("m", "2"), ("m", "4"), ("m", "8"),
-            ("color", "white"), ("color", "black"), ("color", "red"), ("color", "blue"),
-            ("fontSize", "12px"), ("fontSize", "14px"), ("fontSize", "16px"), ("fontSize", "18px"),
-            ("width", "100%"), ("width", "50%"), ("width", "auto"),
-            ("display", "flex"), ("display", "block"), ("display", "none"),
-            ("position", "relative"), ("position", "absolute"), ("position", "fixed"),
-            ("opacity", "0"), ("opacity", "0.5"), ("opacity", "1"),
-            ("zIndex", "1"), ("zIndex", "10"), ("zIndex", "100"),
+            ("bg", "red"),
+            ("bg", "blue"),
+            ("bg", "#000"),
+            ("bg", "#fff"),
+            ("p", "0"),
+            ("p", "1"),
+            ("p", "2"),
+            ("p", "4"),
+            ("p", "8"),
+            ("p", "16"),
+            ("m", "0"),
+            ("m", "1"),
+            ("m", "2"),
+            ("m", "4"),
+            ("m", "8"),
+            ("color", "white"),
+            ("color", "black"),
+            ("color", "red"),
+            ("color", "blue"),
+            ("fontSize", "12px"),
+            ("fontSize", "14px"),
+            ("fontSize", "16px"),
+            ("fontSize", "18px"),
+            ("width", "100%"),
+            ("width", "50%"),
+            ("width", "auto"),
+            ("display", "flex"),
+            ("display", "block"),
+            ("display", "none"),
+            ("position", "relative"),
+            ("position", "absolute"),
+            ("position", "fixed"),
+            ("opacity", "0"),
+            ("opacity", "0.5"),
+            ("opacity", "1"),
+            ("zIndex", "1"),
+            ("zIndex", "10"),
+            ("zIndex", "100"),
         ];
 
-        println!("\n🔍 Testing {} cases for invalid class names:", test_values.len());
+        println!(
+            "\n🔍 Testing {} cases for invalid class names:",
+            test_values.len()
+        );
 
         let mut invalid_count = 0;
 
@@ -687,15 +727,24 @@ mod tests {
 
             if first_char.is_ascii_digit() {
                 invalid_count += 1;
-                println!("❌ INVALID: {} '{}' → .{} (starts with '{}')",
-                    property, value, class_name, first_char);
+                println!(
+                    "❌ INVALID: {} '{}' → .{} (starts with '{}')",
+                    property, value, class_name, first_char
+                );
             }
         }
 
-        println!("✅ Valid: {}/{}", test_values.len() - invalid_count, test_values.len());
+        println!(
+            "✅ Valid: {}/{}",
+            test_values.len() - invalid_count,
+            test_values.len()
+        );
         println!("❌ Invalid: {}/{}\n", invalid_count, test_values.len());
 
-        assert_eq!(invalid_count, 0,
-            "Found {} class names starting with digits!", invalid_count);
+        assert_eq!(
+            invalid_count, 0,
+            "Found {} class names starting with digits!",
+            invalid_count
+        );
     }
 }
