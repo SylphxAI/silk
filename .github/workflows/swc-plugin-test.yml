@@ -4,24 +4,96 @@ on:
   push:
     branches: [main, develop]
     paths:
+      - '.doctrine/project.json'
+      - 'AGENTS.md'
+      - 'PROJECT.md'
       - 'packages/swc-plugin/**'
       - '.github/workflows/swc-plugin-test.yml'
   pull_request:
     branches: [main, develop]
     paths:
+      - '.doctrine/project.json'
+      - 'AGENTS.md'
+      - 'PROJECT.md'
       - 'packages/swc-plugin/**'
       - '.github/workflows/swc-plugin-test.yml'
+  merge_group:
+    types: [checks_requested]
 
 jobs:
+  changed-files:
+    name: Detect affected surface
+    runs-on: [self-hosted, sylphx-linux-standard]
+    outputs:
+      product_changed: ${{ steps.classify.outputs.product_changed }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify affected surface
+        id: classify
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+          MERGE_GROUP_HEAD_SHA: ${{ github.event.merge_group.head_sha }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$EVENT_NAME" == "pull_request" ]]; then
+            base="$PR_BASE_SHA"
+            head="$PR_HEAD_SHA"
+          elif [[ "$EVENT_NAME" == "merge_group" ]]; then
+            base="$MERGE_GROUP_BASE_SHA"
+            head="$MERGE_GROUP_HEAD_SHA"
+          elif [[ "$EVENT_NAME" == "push" ]]; then
+            base="$PUSH_BEFORE"
+            head="$CURRENT_SHA"
+          else
+            echo "product_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "$base" || -z "$head" || "$base" =~ ^0+$ ]]; then
+            echo "product_changed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          changed_files="$(mktemp)"
+          git diff --name-only "$base" "$head" > "$changed_files"
+
+          if grep -Ev '^(\.doctrine/project\.json|AGENTS\.md|PROJECT\.md|\.github/workflows/test\.yml|\.github/workflows/swc-plugin-test\.yml)$' "$changed_files"; then
+            echo "product_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "product_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   test:
     name: Build and Test SWC Plugin
-    runs-on: [self-hosted, sylphx, linux, standard]
+    needs: changed-files
+    runs-on: [self-hosted, sylphx-linux-standard]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate control plane files
+        if: needs.changed-files.outputs.product_changed == 'false'
+        run: |
+          test -f .doctrine/project.json
+          test -f AGENTS.md
+          test -f PROJECT.md
+          python3 -m json.tool .doctrine/project.json >/dev/null
+
       - name: Install Rust
+        if: needs.changed-files.outputs.product_changed == 'true'
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -31,6 +103,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Cache Rust dependencies
+        if: needs.changed-files.outputs.product_changed == 'true'
         uses: actions/cache@v3
         with:
           path: |
@@ -44,6 +117,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install Node.js
+        if: needs.changed-files.outputs.product_changed == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -51,16 +125,19 @@ jobs:
           cache-dependency-path: packages/swc-plugin/package-lock.json
 
       - name: Check Rust formatting
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           cargo fmt -- --check
 
       - name: Run Clippy lints
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           cargo clippy --target wasm32-wasip1 -- -D warnings
 
       - name: Build WASM binary (debug)
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           cargo build --target wasm32-wasip1
@@ -68,6 +145,7 @@ jobs:
           CARGO_TERM_COLOR: always
 
       - name: Build WASM binary (release)
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           cargo build --release --target wasm32-wasip1
@@ -75,6 +153,7 @@ jobs:
           CARGO_TERM_COLOR: always
 
       - name: Run Rust unit tests
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           cargo test --verbose
@@ -82,11 +161,13 @@ jobs:
           CARGO_TERM_COLOR: always
 
       - name: Install Node dependencies
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           npm ci
 
       - name: Run Vitest integration tests
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           npm run test:vitest
@@ -94,12 +175,14 @@ jobs:
           CI: true
 
       - name: Generate test coverage
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           npm run test:coverage
         continue-on-error: true
 
       - name: Upload coverage to Codecov
+        if: needs.changed-files.outputs.product_changed == 'true'
         uses: codecov/codecov-action@v3
         with:
           files: ./packages/swc-plugin/coverage/lcov.info
@@ -108,6 +191,7 @@ jobs:
         continue-on-error: true
 
       - name: Check WASM binary size
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           ls -lh target/wasm32-wasip1/release/swc_plugin_silk.wasm
@@ -115,7 +199,8 @@ jobs:
           echo "WASM binary size: $(($SIZE / 1024))KB"
 
       - name: Upload WASM artifact
-        uses: actions/upload-artifact@v3
+        if: needs.changed-files.outputs.product_changed == 'true'
+        uses: actions/upload-artifact@v4
         with:
           name: swc-plugin-wasm
           path: |
@@ -124,6 +209,7 @@ jobs:
           retention-days: 30
 
       - name: Test with Next.js example
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd examples/nextjs-16-turbopack
           npm ci
@@ -133,9 +219,9 @@ jobs:
 
   benchmark:
     name: Performance Benchmark
-    runs-on: [self-hosted, sylphx, linux, standard]
-    needs: test
-    if: github.event_name == 'pull_request'
+    runs-on: [self-hosted, sylphx-linux-standard]
+    needs: [changed-files, test]
+    if: github.event_name == 'pull_request' && needs.changed-files.outputs.product_changed == 'true'
 
     steps:
       - name: Checkout code
@@ -161,13 +247,23 @@ jobs:
 
   lint:
     name: Lint and Format Check
-    runs-on: [self-hosted, sylphx, linux, standard]
+    needs: changed-files
+    runs-on: [self-hosted, sylphx-linux-standard]
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Validate control plane files
+        if: needs.changed-files.outputs.product_changed == 'false'
+        run: |
+          test -f .doctrine/project.json
+          test -f AGENTS.md
+          test -f PROJECT.md
+          python3 -m json.tool .doctrine/project.json >/dev/null
+
       - name: Install Rust
+        if: needs.changed-files.outputs.product_changed == 'true'
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
@@ -175,11 +271,13 @@ jobs:
           components: rustfmt, clippy
 
       - name: Check Rust formatting
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           cargo fmt -- --check
 
       - name: Run Clippy
+        if: needs.changed-files.outputs.product_changed == 'true'
         run: |
           cd packages/swc-plugin
           cargo clippy --all-targets --all-features -- -D warnings
