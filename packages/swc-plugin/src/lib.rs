@@ -205,9 +205,7 @@ pub fn generate_class_name(property: &str, value: &str, config: &Config) -> Stri
         // Create safe value for class name
         let safe_value = value
             .replace(' ', "_")
-            .replace('(', "")
-            .replace(')', "")
-            .replace('#', "")
+            .replace(['(', ')', '#'], "")
             .replace('.', "_")
             .chars()
             .take(10)
@@ -386,7 +384,7 @@ mod tests {
     #[test]
     fn test_config_default() {
         let config = Config::default();
-        assert_eq!(config.production, false);
+        assert!(!config.production);
         assert_eq!(config.class_prefix, "silk");
     }
 
@@ -394,7 +392,7 @@ mod tests {
     fn test_config_deserialize() {
         let json = r#"{"production": true, "classPrefix": "custom"}"#;
         let config: Config = serde_json::from_str(json).unwrap();
-        assert_eq!(config.production, true);
+        assert!(config.production);
         assert_eq!(config.class_prefix, "custom");
     }
 
@@ -566,11 +564,7 @@ mod tests {
             let matches = actual == expected;
 
             println!(
-                "{}: '{}' → {} (expected: {}) {}",
-                format!("{:15}", property),
-                format!("{:10}", value),
-                actual,
-                expected,
+                "{property:15}: '{value:10}' → {actual} (expected: {expected}) {}",
                 if matches { "✅" } else { "❌" }
             );
 
@@ -646,11 +640,8 @@ mod tests {
             } else {
                 _fail_count += 1;
                 println!(
-                    "❌ {}: '{}' → {} (expected: {})",
-                    format!("{:15}", property),
-                    format!("{:20}", value),
-                    actual,
-                    expected
+                    "❌ {property:15}: '{value:20}' → {} (expected: {})",
+                    actual, expected
                 );
             }
 
