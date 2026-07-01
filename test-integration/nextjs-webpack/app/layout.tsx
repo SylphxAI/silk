@@ -1,4 +1,4 @@
-import '../.next/silk.css'
+import 'silk.css'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

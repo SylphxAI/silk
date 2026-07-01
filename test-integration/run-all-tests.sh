@@ -21,6 +21,8 @@ FAILED=0
 echo -e "${YELLOW}🔨 Building packages...${NC}"
 cd ../packages/core
 bun run build > /dev/null 2>&1
+cd ../babel-plugin-silk
+bun run build > /dev/null 2>&1
 cd ../nextjs-plugin
 bun run build > /dev/null 2>&1
 echo -e "${GREEN}✅ Packages built${NC}"
@@ -43,11 +45,12 @@ cd ../../test-integration/nextjs-webpack
 rm -rf .next node_modules
 npm install --silent --legacy-peer-deps
 if npm run build > /dev/null 2>&1; then
-  if [ -f ".next/static/css/silk.css" ]; then
-    CSS_SIZE=$(wc -c < .next/static/css/silk.css | tr -d ' ')
+  CSS_FILE=$(find .next/static/css -maxdepth 1 -type f -name '*.css' -print -quit 2>/dev/null || true)
+  if [ -n "$CSS_FILE" ] && grep -q '@layer utilities' "$CSS_FILE"; then
+    CSS_SIZE=$(wc -c < "$CSS_FILE" | tr -d ' ')
     echo -e "${GREEN}✅ Webpack build passed (CSS: ${CSS_SIZE} bytes)${NC}"
   else
-    echo -e "${RED}❌ Webpack build failed: CSS not generated${NC}"
+    echo -e "${RED}❌ Webpack build failed: Silk CSS not generated${NC}"
     FAILED=$((FAILED+1))
   fi
 else
